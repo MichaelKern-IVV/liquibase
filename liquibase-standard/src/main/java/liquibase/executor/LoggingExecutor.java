@@ -222,23 +222,23 @@ public class LoggingExecutor extends AbstractExecutor {
     }
 
     @Override
-    public List queryForList(SqlStatement sql, Class elementType) throws DatabaseException {
+    public <T> List<T> queryForList(SqlStatement sql, Class<T> elementType) throws DatabaseException {
         return delegatedReadExecutor.queryForList(sql, elementType);
     }
 
     @Override
-    public List queryForList(SqlStatement sql, Class elementType, List<SqlVisitor> sqlVisitors)
+    public <T> List<T> queryForList(SqlStatement sql, Class<T> elementType, List<SqlVisitor> sqlVisitors)
             throws DatabaseException {
         return delegatedReadExecutor.queryForList(sql, elementType, sqlVisitors);
     }
 
     @Override
-    public List<Map<String, ?>> queryForList(SqlStatement sql) throws DatabaseException {
+    public List<Map<String, Object>> queryForList(SqlStatement sql) throws DatabaseException {
         return delegatedReadExecutor.queryForList(sql);
     }
 
     @Override
-    public List<Map<String, ?>> queryForList(SqlStatement sql, List<SqlVisitor> sqlVisitors) throws DatabaseException {
+    public List<Map<String, Object>> queryForList(SqlStatement sql, List<SqlVisitor> sqlVisitors) throws DatabaseException {
         return delegatedReadExecutor.queryForList(sql, sqlVisitors);
     }
 
@@ -246,7 +246,7 @@ public class LoggingExecutor extends AbstractExecutor {
     public boolean updatesDatabase() {
         return false;
     }
-    
+
     private class NoopWriter extends Writer {
 
         @Override
@@ -263,8 +263,5 @@ public class LoggingExecutor extends AbstractExecutor {
         public void close() throws IOException {
             // does nothing
         }
-
     }
-
-    
 }

@@ -247,7 +247,7 @@ public class StandardChangeLogHistoryService extends AbstractChangeLogHistorySer
             SqlStatement databaseChangeLogStatement = new SelectFromDatabaseChangeLogStatement(
                     new SelectFromDatabaseChangeLogStatement.ByNotNullCheckSum(),
                     new ColumnConfig().setName("MD5SUM"));
-            List<Map<String, ?>> md5sumRS = ChangelogJdbcMdcListener.query(getDatabase(), ex -> ex.queryForList(databaseChangeLogStatement));
+            List<Map<String, Object>> md5sumRS = ChangelogJdbcMdcListener.query(getDatabase(), ex -> ex.queryForList(databaseChangeLogStatement));
 
             if (!md5sumRS.isEmpty()) {
                 //check if any checksum is not using the current version
@@ -308,8 +308,8 @@ public class StandardChangeLogHistoryService extends AbstractChangeLogHistorySer
             List<RanChangeSet> ranChangeSets = new ArrayList<>();
             if (hasDatabaseChangeLogTable()) {
                 Scope.getCurrentScope().getLog(getClass()).info("Reading from " + databaseChangeLogTableName);
-                List<Map<String, ?>> results = queryDatabaseChangeLogTable(database);
-                for (Map rs : results) {
+                List<Map<String, Object>> results = queryDatabaseChangeLogTable(database);
+                for (Map<String, Object> rs : results) {
                     String storedFileName = rs.get("FILENAME").toString();
                     String fileName = DatabaseChangeLog.normalizePath(storedFileName);
                     String author = rs.get("AUTHOR").toString();
@@ -360,7 +360,7 @@ public class StandardChangeLogHistoryService extends AbstractChangeLogHistorySer
         return Collections.unmodifiableList(ranChangeSetList);
     }
 
-    public List<Map<String, ?>> queryDatabaseChangeLogTable(Database database) throws DatabaseException {
+    public List<Map<String, Object>> queryDatabaseChangeLogTable(Database database) throws DatabaseException {
         SelectFromDatabaseChangeLogStatement select = new SelectFromDatabaseChangeLogStatement(new ColumnConfig()
             .setName("*").setComputed(true)).setOrderBy("DATEEXECUTED ASC", "ORDEREXECUTED ASC");
         return ChangelogJdbcMdcListener.query(getDatabase(), executor -> executor.queryForList(select));

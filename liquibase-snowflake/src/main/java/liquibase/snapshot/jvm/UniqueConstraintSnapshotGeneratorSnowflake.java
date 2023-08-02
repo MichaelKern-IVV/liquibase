@@ -41,7 +41,7 @@ public class UniqueConstraintSnapshotGeneratorSnowflake extends UniqueConstraint
     }
 
     @Override
-    protected List<Map<String, ?>> listColumns(UniqueConstraint example, Database database, DatabaseSnapshot snapshot)
+    protected List<Map<String, Object>> listColumns(UniqueConstraint example, Database database, DatabaseSnapshot snapshot)
             throws DatabaseException {
         Relation table = example.getRelation();
         String name = example.getName();

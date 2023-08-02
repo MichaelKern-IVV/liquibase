@@ -3,13 +3,11 @@ package liquibase.snapshot;
 import java.util.Map;
 
 public class CachedRow {
-    private final Map row;
+    private final Map<String, Object> row;
 
-    public CachedRow(Map row) {
+    public CachedRow(Map<String, Object> row) {
         this.row = row;
     }
-
-
 
     public Object get(String columnName) {
         return row.get(columnName);
@@ -18,7 +16,6 @@ public class CachedRow {
     public void set(String columnName, Object value) {
         row.put(columnName, value);
     }
-
 
     public boolean containsColumn(String columnName) {
         return row.containsKey(columnName);
@@ -64,8 +61,9 @@ public class CachedRow {
             String s = (String)o;
             // Firebird JDBC driver quirk:
             // Returns "T" instead of "true" (Boolean.valueOf tests case-insensitively for "true")
-            if ("T".equalsIgnoreCase(s))
+            if ("T".equalsIgnoreCase(s)) {
                 s = "TRUE";
+            }
             return Boolean.valueOf(s);
         }
         return (Boolean) o;

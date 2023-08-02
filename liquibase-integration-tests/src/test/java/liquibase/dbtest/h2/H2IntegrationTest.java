@@ -146,7 +146,7 @@ public class H2IntegrationTest extends AbstractIntegrationTest {
             Liquibase liquibase = createLiquibase("changelogs/h2/complete/rollback.different.contexts.changelog.xml");
             liquibase.update(context);
 
-            List<Map<String, ?>> queryResult = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
+            List<Map<String, Object>> queryResult = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
                     .queryForList(new RawSqlStatement(String.format("select * from %s", tableName)));
 
             Assert.assertEquals(1, queryResult.size());
@@ -176,7 +176,7 @@ public class H2IntegrationTest extends AbstractIntegrationTest {
         Liquibase liquibase = createLiquibase("changelogs/h2/complete/rollback.sql.changelog.xml");
         liquibase.update();
 
-        List<Map<String, ?>> queryResult = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
+        List<Map<String, Object>> queryResult = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
                 .queryForList(new RawSqlStatement(String.format("select * from %s", tableName)));
 
         Assert.assertEquals(1, queryResult.size());

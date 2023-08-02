@@ -49,7 +49,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         UniqueConstraint exampleConstraint = (UniqueConstraint) example;
         Relation table = exampleConstraint.getRelation();
 
-        List<Map<String, ?>> metadata = listColumns(exampleConstraint, database, snapshot);
+        List<Map<String, Object>> metadata = listColumns(exampleConstraint, database, snapshot);
 
         if (metadata.isEmpty()) {
             return null;
@@ -62,7 +62,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         constraint.setDeferrable(((UniqueConstraint) example).isDeferrable());
         constraint.setClustered(((UniqueConstraint) example).isClustered());
 
-        for (Map<String, ?> col : metadata) {
+        for (Map<String, Object> col : metadata) {
             String ascOrDesc = (String) col.get("ASC_OR_DESC");
             Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : ("A".equals(ascOrDesc) ? Boolean.FALSE : null);
             if (database instanceof H2Database) {
@@ -138,7 +138,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         return ((JdbcDatabaseSnapshot) snapshot).getMetaDataFromCache().getUniqueConstraints(schema.getCatalogName(), schema.getName(), table.getName());
     }
 
-    protected List<Map<String, ?>> listColumns(UniqueConstraint example, Database database, DatabaseSnapshot snapshot) throws DatabaseException {
+    protected List<Map<String, Object>> listColumns(UniqueConstraint example, Database database, DatabaseSnapshot snapshot) throws DatabaseException {
         Relation table = example.getRelation();
         Schema schema = example.getSchema();
         String name = example.getName();
@@ -149,7 +149,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         String cacheKey = "uniqueConstraints-" + example.getClass().getSimpleName() + "-" + example.getSchema().toCatalogAndSchema().customize(database).toString();
         String queryCountKey = "uniqueConstraints-" + example.getClass().getSimpleName() + "-queryCount";
 
-        Map<String, List<Map<String, ?>>> columnCache = (ConcurrentHashMap<String, List<Map<String, ?>>>) snapshot.getScratchData(cacheKey);
+        Map<String, List<Map<String, Object>>> columnCache = (Map<String, List<Map<String, Object>>>) snapshot.getScratchData(cacheKey);
         Integer columnQueryCount = (Integer) snapshot.getScratchData(queryCountKey);
         if (columnQueryCount == null) {
             columnQueryCount = 0;
@@ -287,15 +287,15 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
                         + "JOIN sys.sysconstraints c ON c.constraintid = k.constraintid "
                         + "JOIN sys.systables t ON c.tableid = t.tableid "
                         + "WHERE c.constraintname='" + database.correctObjectName(name, UniqueConstraint.class) + "'";
-                List<Map<String, ?>> rows = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(sql));
+                List<Map<String, Object>> rows = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(sql));
 
-                List<Map<String, ?>> returnList = new ArrayList<>();
+                List<Map<String, Object>> returnList = new ArrayList<>();
                 if (rows.isEmpty()) {
                     return returnList;
                 } else if (rows.size() > 1) {
                     throw new UnexpectedLiquibaseException("Got multiple rows back querying unique constraints");
                 } else {
-                    Map<String, ?> rowData = rows.get(0);
+                    Map<String,Object> rowData = rows.get(0);
                     String descriptor = rowData.get("DESCRIPTOR").toString();
                     descriptor = descriptor.replaceFirst(".*\\(", "").replaceFirst("\\).*", "");
                     for (String columnNumber : StringUtil.splitAndTrim(descriptor, ",")) {
@@ -304,7 +304,7 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
                                         + "join sys.systables t on t.tableid=c.referenceid "
                                         + "where t.tablename='" + rowData.get("TABLENAME") + "' and c.columnnumber=" + columnNumber), String.class);
 
-                        Map<String, String> row = new HashMap<>();
+                        Map<String, Object> row = new HashMap<>();
                         row.put("COLUMN_NAME", columnName);
                         returnList.add(row);
                     }
@@ -400,14 +400,14 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
                     }
                 }
             }
-            List<Map<String, ?>> rows = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(sql));
+            List<Map<String, Object>> rows = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(sql));
 
             if (bulkQuery) {
                 columnCache = new ConcurrentHashMap<>();
                 snapshot.setScratchData(cacheKey, columnCache);
-                for (Map<String, ?> row : rows) {
+                for (Map<String, Object> row : rows) {
                     String key = getCacheKey(row, database);
-                    List<Map<String, ?>> constraintRows = columnCache.computeIfAbsent(key, k -> new ArrayList<>());
+                    List<Map<String, Object>> constraintRows = columnCache.computeIfAbsent(key, k -> new ArrayList<>());
                     constraintRows.add(row);
                 }
 
@@ -417,14 +417,12 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
             }
         } else {
             String lookupKey = getCacheKey(example, database);
-            List<Map<String, ?>> rows = columnCache.get(lookupKey);
+            List<Map<String, Object>> rows = columnCache.get(lookupKey);
             if (rows == null) {
                 rows = new ArrayList<>();
             }
             return rows;
         }
-
-
     }
 
     /**
@@ -494,8 +492,9 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         // Yes, I am serious about this. It appears there are neither CTE/WITH clauses nor PIVOT/UNPIVOT operators
         // in Informix SQL.
         for (int i = 1; i <= 16; i++) {
-            if (i > 1)
+            if (i > 1) {
                 sqlBuf.append("UNION ALL\n");
+            }
             sqlBuf.append(
                     String.format("  SELECT\n" +
                                     "    CONS.owner,\n" +
@@ -533,5 +532,4 @@ public class UniqueConstraintSnapshotGenerator extends JdbcSnapshotGenerator {
         // Return the query
         return sqlBuf.toString();
     }
-
 }

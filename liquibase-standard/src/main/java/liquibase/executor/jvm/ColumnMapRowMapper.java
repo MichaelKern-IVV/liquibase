@@ -21,8 +21,7 @@ import java.util.Map;
  *
  * @author Spring Framework
  */
-@SuppressWarnings({"unchecked"})
-public class ColumnMapRowMapper implements RowMapper {
+public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
 
     private final boolean caseSensitiveDatabase;
 
@@ -31,10 +30,10 @@ public class ColumnMapRowMapper implements RowMapper {
     }
 
     @Override
-    public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int columnCount = rsmd.getColumnCount();
-        Map mapOfColValues = createColumnMap(columnCount);
+        Map<String, Object> mapOfColValues = createColumnMap(columnCount);
         for (int i = 1; i <= columnCount; i++) {
             String key = getColumnKey(rsmd.getColumnLabel(i));
             Object obj = getColumnValue(rs, i);
@@ -49,8 +48,8 @@ public class ColumnMapRowMapper implements RowMapper {
      *                    capacity for the Map
      * @return the new Map instance
      */
-    protected Map createColumnMap(int columnCount) {
-        return new LinkedHashMap(columnCount);
+    protected Map<String, Object> createColumnMap(int columnCount) {
+        return new LinkedHashMap<>(columnCount);
     }
 
     /**
@@ -80,5 +79,4 @@ public class ColumnMapRowMapper implements RowMapper {
     protected Object getColumnValue(ResultSet rs, int index) throws SQLException {
         return JdbcUtil.getResultSetValue(rs, index);
     }
-
 }

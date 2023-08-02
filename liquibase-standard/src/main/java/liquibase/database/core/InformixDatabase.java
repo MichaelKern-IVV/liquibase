@@ -181,10 +181,10 @@ public class InformixDatabase extends AbstractJdbcDatabase {
 	@Override
 	public String getViewDefinition(CatalogAndSchema schema, final String viewName) throws DatabaseException {
         schema = schema.customize(this);
-		List<Map<String, ?>> retList = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", this).queryForList(new GetViewDefinitionStatement(schema.getCatalogName(), schema.getSchemaName(), viewName));
+		List<Map<String, Object>> retList = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", this).queryForList(new GetViewDefinitionStatement(schema.getCatalogName(), schema.getSchemaName(), viewName));
 		// building the view definition from the multiple rows
 		StringBuilder sb = new StringBuilder();
-		for (Map rowMap : retList) {
+		for (Map<String, Object> rowMap : retList) {
 			String s = (String) rowMap.get("VIEWTEXT");
 			sb.append(s);
 		}

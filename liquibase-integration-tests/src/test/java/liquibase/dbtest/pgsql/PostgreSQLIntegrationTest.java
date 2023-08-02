@@ -90,7 +90,7 @@ public class PostgreSQLIntegrationTest extends AbstractIntegrationTest {
         clearDatabase();
         try {
             liquibase.update();
-            List<Map<String, ?>>  data = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
+            List<Map<String, Object>>  data = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", getDatabase())
                     .queryForList(
                             new RawSqlStatement("SELECT pg_column_size(content_bytea) as BYTEASIZE, pg_column_size(lo_get(content_oid)) as OIDSIZE FROM  public.blobtest"));
             Assert.assertNotNull(data.get(0));

@@ -52,10 +52,10 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
         Database database = snapshot.getDatabase();
 
         //noinspection unchecked
-        List<Map<String, ?>> sequences = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(getSelectSequenceSql(schema, database)));
+        List<Map<String, Object>> sequences = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForList(new RawSqlStatement(getSelectSequenceSql(schema, database)));
 
         if (sequences != null) {
-            for (Map<String, ?> sequence : sequences) {
+            for (Map<String, Object> sequence : sequences) {
                 schema.addDatabaseObject(mapToSequence(sequence, (Schema) foundObject, database));
             }
         }
@@ -67,7 +67,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
             return example;
         }
         Database database = snapshot.getDatabase();
-        List<Map<String, ?>> sequences;
+        List<Map<String, Object>> sequences;
         if (database instanceof Db2zDatabase) {
             sequences = Scope.getCurrentScope().getSingleton(ExecutorService.class)
                     .getExecutor("jdbc", database)
@@ -91,8 +91,8 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
         }
     }
 
-    private DatabaseObject getSequences(DatabaseObject example, Database database, List<Map<String, ?>> sequences) {
-        for (Map<String, ?> sequenceRow : sequences) {
+    private DatabaseObject getSequences(DatabaseObject example, Database database, List<Map<String, Object>> sequences) {
+        for (Map<String, Object> sequenceRow : sequences) {
             String name = cleanNameFromDatabase((String) sequenceRow.get("SEQUENCE_NAME"), database);
             if (((database.isCaseSensitive() && name.equals(example.getName())) || (!database.isCaseSensitive() &&
                 name.equalsIgnoreCase(example.getName())))) {
@@ -258,7 +258,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
         } else if (database instanceof MariaDBDatabase) {
             StringJoiner j = new StringJoiner(" \n UNION\n");
             try {
-                List<Map<String, ?>> res = Scope.getCurrentScope().getSingleton(ExecutorService.class)
+                List<Map<String, Object>> res = Scope.getCurrentScope().getSingleton(ExecutorService.class)
                         .getExecutor("jdbc", database)
                         .queryForList(new RawSqlStatement("select table_name AS SEQUENCE_NAME " +
                                                         "from information_schema.TABLES " +
@@ -267,7 +267,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
                 if (res.size() == 0) {
                     return "SELECT 'name' AS SEQUENCE_NAME from dual WHERE 1=0";
                 }
-                for (Map<String, ?> e : res) {
+                for (Map<String, Object> e : res) {
                     String seqName = (String) e.get("SEQUENCE_NAME");
                     j.add(String.format("SELECT '%s' AS SEQUENCE_NAME, " +
                             "START_VALUE AS START_VALUE, " +

@@ -19,14 +19,14 @@ import java.util.Map;
  * @see RowMapperResultSetExtractor
  * @see liquibase.executor.Executor
  */
-public class RowMapperNotNullConstraintsResultSetExtractor extends RowMapperResultSetExtractor {
+public class RowMapperNotNullConstraintsResultSetExtractor extends RowMapperResultSetExtractor<Map<String, Object>> {
     /**
      * Field describes condition for NotNullConstraint in String format e.g. "ID" IS NOT NULL |  name = 'foo' | etc.
      */
     private static final String SEARCH_CONDITION_FIELD = "SEARCH_CONDITION";
     private static final String SEARCH_CONDITION = " is not null";
 
-    public RowMapperNotNullConstraintsResultSetExtractor(RowMapper rowMapper) {
+    public RowMapperNotNullConstraintsResultSetExtractor(RowMapper<Map<String, Object>> rowMapper) {
         super(rowMapper);
 
         if (!(rowMapper instanceof ColumnMapRowMapper)) {
@@ -36,11 +36,11 @@ public class RowMapperNotNullConstraintsResultSetExtractor extends RowMapperResu
     }
 
     @Override
-    public Object extractData(ResultSet resultSet) throws SQLException {
-        List<Object> resultList = (this.rowsExpected > 0 ? new ArrayList<>(this.rowsExpected) : new ArrayList<>());
+    public List<Map<String, Object>> extractData(ResultSet resultSet) throws SQLException {
+        List<Map<String, Object>> resultList = (rowsExpected > 0 ? new ArrayList<>(rowsExpected) : new ArrayList<>());
         int rowNum = 0;
         while (resultSet.next()) {
-            Map mapOfColValues = (Map) this.rowMapper.mapRow(resultSet, rowNum++);
+            Map<String, Object> mapOfColValues = rowMapper.mapRow(resultSet, rowNum++);
             Object searchCondition = mapOfColValues.get(SEARCH_CONDITION_FIELD);
 
             if (searchCondition == null) {

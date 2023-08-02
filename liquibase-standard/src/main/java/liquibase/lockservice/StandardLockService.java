@@ -430,8 +430,8 @@ public class StandardLockService implements LockService {
             SqlStatement sqlStatement = new SelectFromDatabaseChangeLogLockStatement(
                     "ID", "LOCKED", "LOCKGRANTED", "LOCKEDBY"
             );
-            List<Map<String, ?>> rows = ChangelogJdbcMdcListener.query(database, executor -> executor.queryForList(sqlStatement));
-            for (Map columnMap : rows) {
+            List<Map<String, Object>> rows = ChangelogJdbcMdcListener.query(database, executor -> executor.queryForList(sqlStatement));
+            for (Map<String, Object> columnMap : rows) {
                 Object lockedValue = columnMap.get("LOCKED");
                 Boolean locked;
                 if (lockedValue instanceof Number) {
@@ -464,7 +464,7 @@ public class StandardLockService implements LockService {
 
     @Override
     public void forceReleaseLock() throws LockException, DatabaseException {
-        this.init();
+        init();
         releaseLock();
     }
 

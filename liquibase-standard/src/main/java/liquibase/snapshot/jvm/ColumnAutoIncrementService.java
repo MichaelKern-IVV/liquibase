@@ -52,8 +52,8 @@ public class ColumnAutoIncrementService {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
             try {
                 String query = this.getQueryForDatabaseAndSchema(database, schema);
-                List<Map<String, ?>> rows = executor.queryForList(new RawSqlStatement(query));
-                for (Map<String, ?> row : rows) {
+                List<Map<String, Object>> rows = executor.queryForList(new RawSqlStatement(query));
+                for (Map<String, Object> row : rows) {
                     String schemaName = (String) row.get("SCHEMA_NAME");
                     String tableName = (String) row.get("TABLE_NAME");
                     String columnName = (String) row.get("COLUMN_NAME");
@@ -213,5 +213,4 @@ public class ColumnAutoIncrementService {
             }
         }
     }
-
 }

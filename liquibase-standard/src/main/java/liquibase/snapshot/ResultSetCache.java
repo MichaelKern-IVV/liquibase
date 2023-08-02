@@ -292,7 +292,7 @@ public class ResultSetCache {
             resultSet.setFetchSize(database.getFetchSize());
             List<CachedRow> returnList = new ArrayList<>();
             try {
-                List<Map> result = (List<Map>) new RowMapperResultSetExtractor(new ColumnMapRowMapper(database.isCaseSensitive()) {
+                List<Map<String, Object>> result = new RowMapperResultSetExtractor(new ColumnMapRowMapper(database.isCaseSensitive()) {
                     @Override
                     protected Object getColumnValue(ResultSet rs, int index) throws SQLException {
                         Object value = super.getColumnValue(rs, index);
@@ -317,7 +317,7 @@ public class ResultSetCache {
                     }
                 }).extractData(resultSet);
 
-                for (Map row : result) {
+                for (Map<String,Object> row : result) {
                     returnList.add(new CachedRow(row));
                 }
             } finally {

@@ -77,7 +77,7 @@ public class StandardLockServiceTest {
         }
     }
 
-    private static List<Map<String, ?>> sampleLockData() {
+    private static List<Map<String, Object>> sampleLockData() {
         Map<String, Object> columnMapRow0 = new TreeMap<>();
 
         columnMapRow0.put("ID", ID0);

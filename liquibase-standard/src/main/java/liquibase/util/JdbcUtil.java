@@ -126,12 +126,12 @@ public abstract class JdbcUtil {
      * @param results the result Collection (can be <code>null</code>)
      * @return the single result object
      */
-    public static Object requiredSingleResult(Collection results) throws DatabaseException {
+    public static <T> T requiredSingleResult(Collection<T> results) throws DatabaseException {
         int size = ((results != null) ? results.size() : 0);
         if (size == 0) {
             throw new DatabaseException("Empty result set, expected one row");
         }
-        if (results.size() > 1) {
+        if (size > 1) {
             throw new DatabaseException("Result set larger than one row");
         }
         return results.iterator().next();
@@ -161,6 +161,4 @@ public abstract class JdbcUtil {
         }
         return null;
     }
-
-
 }

@@ -126,9 +126,9 @@ public interface Executor extends Plugin {
      */
     int queryForInt(SqlStatement sql, List<SqlVisitor> sqlVisitors) throws DatabaseException;
 
-    List queryForList(SqlStatement sql, Class elementType) throws DatabaseException;
+    <T> List<T> queryForList(SqlStatement sql, Class<T> elementType) throws DatabaseException;
 
-    List queryForList(SqlStatement sql, Class elementType, List<SqlVisitor> sqlVisitors) throws DatabaseException;
+    <T> List<T> queryForList(SqlStatement sql, Class<T> elementType, List<SqlVisitor> sqlVisitors) throws DatabaseException;
 
     /**
      * Executes a given SQL statement and returns a List of rows. Each row is represented a a Map<String, ?>,
@@ -138,7 +138,7 @@ public interface Executor extends Plugin {
      * @return a List of [Column name] -> [column value]-mapped rows.
      * @throws DatabaseException if an error occurs during SQL processing (e.g. the SQL is not valid for the database)
      */
-    List<Map<String, ?>> queryForList(SqlStatement sql) throws DatabaseException;
+    List<Map<String, Object>> queryForList(SqlStatement sql) throws DatabaseException;
 
     /**
      * Applies a list of SqlVisitors to the SQL query, then executes the (possibly modified) SQL query and lastly,
@@ -149,7 +149,7 @@ public interface Executor extends Plugin {
      * @return a List of [Column name] -> [column value]-mapped rows.
      * @throws DatabaseException if an error occurs during SQL processing (e.g. the SQL is not valid for the database)
      */
-    List<Map<String, ?>> queryForList(SqlStatement sql, List<SqlVisitor> sqlVisitors) throws DatabaseException;
+    List<Map<String, Object>> queryForList(SqlStatement sql, List<SqlVisitor> sqlVisitors) throws DatabaseException;
 
 
     /**

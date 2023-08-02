@@ -101,7 +101,7 @@ public class ExecuteSqlCommandStep extends AbstractCommandStep {
 
     private String handleSelect(String sqlString, Executor executor) throws DatabaseException {
         StringBuilder out = new StringBuilder();
-        List<Map<String, ?>> rows = executor.queryForList(new RawSqlStatement(sqlString));
+        List<Map<String, Object>> rows = executor.queryForList(new RawSqlStatement(sqlString));
         out.append("Output of ").append(sqlString).append(":\n");
         if (rows.isEmpty()) {
             out.append("-- Empty Resultset --\n");
