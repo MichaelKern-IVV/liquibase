@@ -15,8 +15,8 @@ public abstract class NumberUtil {
      *
      * @deprecated use {@link ObjectUtil#convert(Object, Class)}
      */
-    public static Number convertNumberToTargetClass(Number number, Class targetClass) throws IllegalArgumentException {
-        return (Number) ObjectUtil.convert(number, targetClass);
+    public static Number convertNumberToTargetClass(Number number, Class<Number> targetClass) throws IllegalArgumentException {
+        return ObjectUtil.convert(number, targetClass);
     }
 
     /**
@@ -38,7 +38,7 @@ public abstract class NumberUtil {
      * @see java.lang.Double#valueOf
      * @see java.math.BigDecimal#BigDecimal(String)
      */
-    public static Number parseNumber(String text, Class targetClass) {
+    public static Number parseNumber(String text, Class<Number> targetClass) {
         String trimmed = text.trim();
 
         if (targetClass.equals(Byte.class)) {
