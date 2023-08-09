@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * A container of columns. Usually a table or view.
  */
-public abstract class Relation extends AbstractDatabaseObject {
+public abstract class Relation extends AbstractDatabaseObject<Relation> {
 
     private String name;
 
@@ -102,15 +102,14 @@ public abstract class Relation extends AbstractDatabaseObject {
     }
 
     @Override
-    public int compareTo(Object o) {
-        Relation that = (Relation) o;
+    public int compareTo(Relation that) {
         int returnValue = 0;
         if ((this.getSchema() != null) && (that.getSchema() != null)) {
             returnValue = this.getSchema().compareTo(that.getSchema());
         }
 
         if (returnValue == 0) {
-            returnValue = this.getName().compareToIgnoreCase(((Relation) o).getName());
+            returnValue = this.getName().compareToIgnoreCase(that.getName());
         }
         return  returnValue;
     }

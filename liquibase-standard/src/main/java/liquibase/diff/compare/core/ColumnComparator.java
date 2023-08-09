@@ -15,7 +15,7 @@ import liquibase.util.BooleanUtil;
 import java.util.Locale;
 import java.util.Set;
 
-public class ColumnComparator implements DatabaseObjectComparator {
+public class ColumnComparator implements DatabaseObjectComparator<Column> {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         if (Column.class.isAssignableFrom(objectType)) {
@@ -25,8 +25,7 @@ public class ColumnComparator implements DatabaseObjectComparator {
     }
 
     @Override
-    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        Column column = (Column) databaseObject;
+    public String[] hash(Column column, Database accordingTo, DatabaseObjectComparatorChain chain) {
 
         String hash = column.getName();
         if (column.getRelation() != null) {
@@ -42,33 +41,26 @@ public class ColumnComparator implements DatabaseObjectComparator {
     }
 
     @Override
-    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        if (!((databaseObject1 instanceof Column) && (databaseObject2 instanceof Column))) {
-            return false;
-        }
-
-        Column thisColumn = (Column) databaseObject1;
-        Column otherColumn = (Column) databaseObject2;
+    public boolean isSameObject(Column thisColumn, Column thatColumn, Database accordingTo, DatabaseObjectComparatorChain chain) {
 
         //short circut chain.isSameObject for performance reasons. There can be a lot of columns in a database
-        if (!DefaultDatabaseObjectComparator.nameMatches(thisColumn, otherColumn, accordingTo)) {
+        if (!DefaultDatabaseObjectComparator.nameMatches(thisColumn, thatColumn, accordingTo)) {
             return false;
         }
 
-        if (!DatabaseObjectComparatorFactory.getInstance().isSameObject(thisColumn.getRelation(), otherColumn.getRelation(), chain.getSchemaComparisons(), accordingTo)) {
+        if (!DatabaseObjectComparatorFactory.getInstance().isSameObject(thisColumn.getRelation(), thatColumn.getRelation(), chain.getSchemaComparisons(), accordingTo)) {
             return false;
         }
 
-        if (BooleanUtil.isTrue(thisColumn.getComputed()) != BooleanUtil.isTrue(otherColumn.getComputed())) {
+        if (BooleanUtil.isTrue(thisColumn.getComputed()) != BooleanUtil.isTrue(thatColumn.getComputed())) {
             return false;
         }
 
-        return BooleanUtil.isTrue(thisColumn.getDescending()) == BooleanUtil.isTrue(otherColumn.getDescending());
+        return BooleanUtil.isTrue(thisColumn.getDescending()) == BooleanUtil.isTrue(thatColumn.getDescending());
     }
 
-
     @Override
-    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Column thisColumn, Column thatColumn, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("type");
         exclude.add("autoIncrementInformation");
@@ -77,20 +69,20 @@ public class ColumnComparator implements DatabaseObjectComparator {
             exclude.add("order");
         }
 
-        ObjectDifferences differences = chain.findDifferences(databaseObject1, databaseObject2, accordingTo, compareControl, exclude);
+        ObjectDifferences differences = chain.findDifferences(thisColumn, thatColumn, accordingTo, compareControl, exclude);
 
-        differences.compare("name", databaseObject1, databaseObject2, new ObjectDifferences.DatabaseObjectNameCompareFunction(Column.class, accordingTo));
-        differences.compare("type", databaseObject1, databaseObject2, new ObjectDifferences.DatabaseObjectNameCompareFunction(Column.class, accordingTo));
+        differences.compare("name", thisColumn, thatColumn, new ObjectDifferences.DatabaseObjectNameCompareFunction(Column.class, accordingTo));
+        differences.compare("type", thisColumn, thatColumn, new ObjectDifferences.DatabaseObjectNameCompareFunction(Column.class, accordingTo));
 
-        boolean autoIncrement1 = ((Column) databaseObject1).isAutoIncrement();
-        boolean autoIncrement2 = ((Column) databaseObject2).isAutoIncrement();
+        boolean autoIncrement1 = thisColumn.isAutoIncrement();
+        boolean autoIncrement2 = thatColumn.isAutoIncrement();
 
         if (autoIncrement1 != autoIncrement2 && !compareControl.isSuppressedField(Column.class, "autoIncrementInformation")) { //only compare if autoIncrement or not since there are sometimes expected differences in start/increment/etc value.
             differences.addDifference("autoIncrement", autoIncrement1, autoIncrement2);
         }
         if (accordingTo instanceof PostgresDatabase && autoIncrement1 && autoIncrement2) {
-            String type1 = ((Column) databaseObject1).getType().getTypeName();
-            String type2 = ((Column) databaseObject2).getType().getTypeName();
+            String type1 = thisColumn.getType().getTypeName();
+            String type2 = thatColumn.getType().getTypeName();
             boolean typesEquivalent = isPostgresAutoIncrementEquivalentType(type1, type2) || isPostgresAutoIncrementEquivalentType(type2, type1);
             if (typesEquivalent) {
                 differences.removeDifference("type");

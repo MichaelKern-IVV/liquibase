@@ -48,7 +48,7 @@ public class MissingDataExternalFileChangeGenerator extends MissingDataChangeGen
     }
 
     @Override
-    public Change[] fixMissing(DatabaseObject missingObject, DiffOutputControl outputControl, Database referenceDatabase, Database comparisionDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixMissing(DatabaseObject<?> missingObject, DiffOutputControl outputControl, Database referenceDatabase, Database comparisionDatabase, ChangeGeneratorChain chain) {
     
         ResultSet rs = null;
         try (

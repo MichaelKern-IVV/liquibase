@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * @deprecated Used by the old {@link LiquibaseCommand} style of command setup.
  */
-public class CommandArgument implements Comparable {
+public class CommandArgument implements Comparable<CommandArgument> {
 
     private String name;
     private String description;
@@ -29,8 +29,8 @@ public class CommandArgument implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        return this.getName().compareTo(((CommandArgument) o).getName());
+    public int compareTo(CommandArgument o) {
+        return this.getName().compareTo(o.getName());
     }
 
     @Override

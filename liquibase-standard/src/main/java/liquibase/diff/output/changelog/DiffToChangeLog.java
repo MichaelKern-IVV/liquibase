@@ -277,7 +277,8 @@ public class DiffToChangeLog {
 
         for (Class<? extends DatabaseObject> type : types) {
             ObjectQuotingStrategy quotingStrategy = diffOutputControl.getObjectQuotingStrategy();
-            for (Map.Entry<? extends DatabaseObject, ObjectDifferences> entry : diffResult.getChangedObjects(type, comparator).entrySet()) {
+            diffResult.getChangedObjects(type, comparator);
+            for (Map.Entry<DatabaseObject<?>, ObjectDifferences> entry : diffResult.getChangedObjects(type, comparator).entrySet()) {
                 if (!diffResult.getReferenceSnapshot().getDatabase().isLiquibaseObject(entry.getKey()) && !diffResult.getReferenceSnapshot().getDatabase().isSystemObject(entry.getKey())) {
                     Change[] changes = changeGeneratorFactory.fixChanged(entry.getKey(), entry.getValue(), diffOutputControl, diffResult.getReferenceSnapshot().getDatabase(), diffResult.getComparisonSnapshot().getDatabase());
                     addToChangeSets(changes, updateChangeSets, quotingStrategy, created);
@@ -286,9 +287,9 @@ public class DiffToChangeLog {
         }
 
         types = getOrderedOutputTypes(MissingObjectChangeGenerator.class);
-        List<DatabaseObject> missingObjects = new ArrayList<>();
+        List<DatabaseObject<?>> missingObjects = new ArrayList<>();
         for (Class<? extends DatabaseObject> type : types) {
-            for (DatabaseObject object : diffResult.getMissingObjects(type, getDatabaseObjectCollectionComparator())) {
+            for (DatabaseObject<?> object : diffResult.getMissingObjects(type, getDatabaseObjectCollectionComparator())) {
                 if (object == null) {
                     continue;
                 }
@@ -300,7 +301,7 @@ public class DiffToChangeLog {
 
         List<ChangeSet> createChangeSets = new ArrayList<>();
 
-        for (DatabaseObject object : sortMissingObjects(missingObjects, diffResult.getReferenceSnapshot().getDatabase())) {
+        for (DatabaseObject<?> object : sortMissingObjects(missingObjects, diffResult.getReferenceSnapshot().getDatabase())) {
             ObjectQuotingStrategy quotingStrategy = diffOutputControl.getObjectQuotingStrategy();
 
             Change[] changes = changeGeneratorFactory.fixMissing(object, diffOutputControl, diffResult.getReferenceSnapshot().getDatabase(), diffResult.getComparisonSnapshot().getDatabase());
@@ -312,7 +313,7 @@ public class DiffToChangeLog {
         types = getOrderedOutputTypes(UnexpectedObjectChangeGenerator.class);
         for (Class<? extends DatabaseObject> type : types) {
             ObjectQuotingStrategy quotingStrategy = diffOutputControl.getObjectQuotingStrategy();
-            for (DatabaseObject object : sortUnexpectedObjects(diffResult.getUnexpectedObjects(type, comparator), diffResult.getReferenceSnapshot().getDatabase())) {
+            for (DatabaseObject<?> object : sortUnexpectedObjects(diffResult.getUnexpectedObjects(type, comparator), diffResult.getReferenceSnapshot().getDatabase())) {
                 if (!diffResult.getComparisonSnapshot().getDatabase().isLiquibaseObject(object) && !diffResult.getComparisonSnapshot().getDatabase().isSystemObject(object)) {
                     Change[] changes = changeGeneratorFactory.fixUnexpected(object, diffOutputControl, diffResult.getReferenceSnapshot().getDatabase(), diffResult.getComparisonSnapshot().getDatabase());
                     addToChangeSets(changes, deleteChangeSets, quotingStrategy, created);
@@ -362,8 +363,12 @@ public class DiffToChangeLog {
     private DatabaseObjectCollectionComparator getDatabaseObjectCollectionComparator() {
         return new DatabaseObjectCollectionComparator() {
             @Override
-            public int compare(DatabaseObject o1, DatabaseObject o2) {
+            public int compare(DatabaseObject<?> o1, DatabaseObject<?> o2) {
                 if (o1 instanceof Column && o1.getAttribute(ORDER_ATTRIBUTE, Integer.class) != null && o2.getAttribute(ORDER_ATTRIBUTE, Integer.class) != null) {
+                	
+                	o1.getAttribute(ORDER_ATTRIBUTE, Integer.class);
+                	
+                	
                     int i = o1.getAttribute(ORDER_ATTRIBUTE, Integer.class).compareTo(o2.getAttribute(ORDER_ATTRIBUTE, Integer.class));
                     if (i != 0) {
                         return i;
@@ -381,15 +386,15 @@ public class DiffToChangeLog {
         };
     }
 
-    private List<DatabaseObject> sortUnexpectedObjects(Collection<? extends DatabaseObject> unexpectedObjects, Database database) {
-        return sortObjects("unexpected", (Collection<DatabaseObject>) unexpectedObjects, database);
+    private List<DatabaseObject> sortUnexpectedObjects(Collection<DatabaseObject<?>> unexpectedObjects, Database database) {
+        return sortObjects("unexpected", (Collection<DatabaseObject<?>>) unexpectedObjects, database);
     }
 
-    private List<DatabaseObject> sortMissingObjects(Collection<DatabaseObject> missingObjects, Database database) {
+    private List<DatabaseObject> sortMissingObjects(Collection<DatabaseObject<?>> missingObjects, Database database) {
         return sortObjects("missing", missingObjects, database);
     }
 
-    private List<DatabaseObject> sortObjects(final String type, Collection<DatabaseObject> objects, Database database) {
+    private List<DatabaseObject> sortObjects(final String type, Collection<DatabaseObject<?>> objects, Database database) {
 
         if (!objects.isEmpty() && supportsSortingObjects(database) && (database.getConnection() != null) && !(database.getConnection() instanceof OfflineConnection)) {
             List<String> schemas = new ArrayList<>();
@@ -475,10 +480,10 @@ public class DiffToChangeLog {
         List<Map<String, Object>> rs = null;
         try {
             if (tryDbaDependencies) {
-                rs = executor.queryForList(new RawSqlStatement("select OWNER, NAME, REFERENCED_OWNER, REFERENCED_NAME from DBA_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(OWNER = REFERENCED_OWNER AND NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "OWNER='" + obj + "'"
+                rs = executor.queryForList(new RawSqlStatement("select OWNER, NAME, REFERENCED_OWNER, REFERENCED_NAME from DBA_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(OWNER = REFERENCED_OWNER AND NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", obj -> "OWNER='" + obj + "'"
                 ) + ")"));
             } else {
-                rs = executor.queryForList(new RawSqlStatement("select NAME, REFERENCED_OWNER, REFERENCED_NAME from USER_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "REFERENCED_OWNER='" + obj + "'"
+                rs = executor.queryForList(new RawSqlStatement("select NAME, REFERENCED_OWNER, REFERENCED_NAME from USER_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", obj -> "REFERENCED_OWNER='" + obj + "'"
                 ) + ")"));
             }
         } catch (DatabaseException dbe) {
@@ -515,7 +520,7 @@ public class DiffToChangeLog {
     protected void addDependencies(DependencyUtil.DependencyGraph<String> graph, List<String> schemas, Database database) throws DatabaseException {
         if (database instanceof DB2Database) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
-            List<Map<String, Object>> rs = executor.queryForList(new RawSqlStatement("select TABSCHEMA, TABNAME, BSCHEMA, BNAME from syscat.tabdep where (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "TABSCHEMA='" + obj + "'"
+            List<Map<String, Object>> rs = executor.queryForList(new RawSqlStatement("select TABSCHEMA, TABNAME, BSCHEMA, BNAME from syscat.tabdep where (" + StringUtil.join(schemas, " OR ", obj -> "TABSCHEMA='" + obj + "'"
             ) + ")"));
             for (Map<String, ?> row : rs) {
                 String tabName = StringUtil.trimToNull((String) row.get("TABSCHEMA")) + "." + StringUtil.trimToNull((String) row.get("TABNAME"));
@@ -525,7 +530,7 @@ public class DiffToChangeLog {
             }
         } else if (database instanceof Db2zDatabase) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
-            String db2ZosSql = "SELECT DSCHEMA AS TABSCHEMA, DNAME AS TABNAME, BSCHEMA, BNAME FROM SYSIBM.SYSDEPENDENCIES WHERE (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "DSCHEMA='" + obj + "'"
+            String db2ZosSql = "SELECT DSCHEMA AS TABSCHEMA, DNAME AS TABNAME, BSCHEMA, BNAME FROM SYSIBM.SYSDEPENDENCIES WHERE (" + StringUtil.join(schemas, " OR ", obj -> "DSCHEMA='" + obj + "'"
             ) + ")";
             List<Map<String, Object>> rs = executor.queryForList(new RawSqlStatement(db2ZosSql));
             for (Map<String, Object> row : rs) {
@@ -556,20 +561,20 @@ public class DiffToChangeLog {
             }
         } else if (database instanceof MSSQLDatabase) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
-            String sql = "select object_schema_name(referencing_id) as referencing_schema_name, object_name(referencing_id) as referencing_name, object_name(referenced_id) as referenced_name, object_schema_name(referenced_id) as referenced_schema_name  from sys.sql_expression_dependencies depz where (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "object_schema_name(referenced_id)='" + obj + "'"
+            String sql = "select object_schema_name(referencing_id) as referencing_schema_name, object_name(referencing_id) as referencing_name, object_name(referenced_id) as referenced_name, object_schema_name(referenced_id) as referenced_schema_name  from sys.sql_expression_dependencies depz where (" + StringUtil.join(schemas, " OR ", obj -> "object_schema_name(referenced_id)='" + obj + "'"
             ) + ")";
             sql += " UNION select object_schema_name(object_id) as referencing_schema_name, object_name(object_id) as referencing_name, object_name(parent_object_id) as referenced_name, object_schema_name(parent_object_id) as referenced_schema_name " +
                     "from sys.objects " +
                     "where parent_object_id > 0 " +
                     "and is_ms_shipped=0 " +
-                    "and (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "object_schema_name(object_id)='" + obj + "'"
+                    "and (" + StringUtil.join(schemas, " OR ", obj -> "object_schema_name(object_id)='" + obj + "'"
             ) + ")";
 
             sql += " UNION select object_schema_name(fk.object_id) as referencing_schema_name, fk.name as referencing_name, i.name as referenced_name, object_schema_name(i.object_id) as referenced_schema_name " +
                     "from sys.foreign_keys fk " +
                     "join sys.indexes i on fk.referenced_object_id=i.object_id and fk.key_index_id=i.index_id " +
                     "where fk.is_ms_shipped=0 " +
-                    "and (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "object_schema_name(fk.object_id)='" + obj + "'"
+                    "and (" + StringUtil.join(schemas, " OR ", obj -> "object_schema_name(fk.object_id)='" + obj + "'"
             ) + ")";
 
             sql += " UNION select object_schema_name(i.object_id) as referencing_schema_name, object_name(i.object_id) as referencing_name, s.name as referenced_name, null as referenced_schema_name " +
@@ -605,10 +610,10 @@ public class DiffToChangeLog {
 
             //get index -> table dependencies
             sql += " UNION select object_schema_name(i.object_id) as referencing_schema_name, i.name as referencing_name, object_name(i.object_id) as referenced_name, object_schema_name(i.object_id) as referenced_schema_name from sys.indexes i " +
-                    "where " + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "object_schema_name(i.object_id)='" + obj + "'");
+                    "where " + StringUtil.join(schemas, " OR ", obj -> "object_schema_name(i.object_id)='" + obj + "'");
 
             //get schema -> base object dependencies
-            sql += " UNION SELECT SCHEMA_NAME(SCHEMA_ID) as referencing_schema_name, name as referencing_name, PARSENAME(BASE_OBJECT_NAME,1) AS referenced_name, (CASE WHEN PARSENAME(BASE_OBJECT_NAME,2) IS NULL THEN schema_name(schema_id) else PARSENAME(BASE_OBJECT_NAME,2) END) AS referenced_schema_name FROM sys.synonyms WHERE is_ms_shipped='false' AND " + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "SCHEMA_NAME(SCHEMA_ID)='" + obj + "'");
+            sql += " UNION SELECT SCHEMA_NAME(SCHEMA_ID) as referencing_schema_name, name as referencing_name, PARSENAME(BASE_OBJECT_NAME,1) AS referenced_name, (CASE WHEN PARSENAME(BASE_OBJECT_NAME,2) IS NULL THEN schema_name(schema_id) else PARSENAME(BASE_OBJECT_NAME,2) END) AS referenced_schema_name FROM sys.synonyms WHERE is_ms_shipped='false' AND " + StringUtil.join(schemas, " OR ", obj -> "SCHEMA_NAME(SCHEMA_ID)='" + obj + "'");
 
             //get non-clustered indexes -> unique clustered indexes on views dependencies
             sql += " UNION select object_schema_name(c.object_id) as referencing_schema_name, c.name as referencing_name, object_schema_name(nc.object_id) as referenced_schema_name, nc.name as referenced_name from sys.indexes c join sys.indexes nc on c.object_id=nc.object_id JOIN sys.objects o ON c.object_id = o.object_id where  c.index_id != nc.index_id and c.type_desc='CLUSTERED' and c.is_unique='true' and (not(nc.type_desc='CLUSTERED') OR nc.is_unique='false') AND o.type_desc='VIEW' AND o.name='AR_DETAIL_OPEN'";
@@ -712,7 +717,7 @@ public class DiffToChangeLog {
                 "      ELSE referencing_name\n" +
                 "    END)  AS referencing_name from dependency_pair where REFERENCED_NAME != REFERENCING_NAME " +
                 " AND (" +
-                StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> " REFERENCED_NAME like '" + obj + ".%' OR REFERENCED_NAME NOT LIKE '%.%'") + ")\n" +
+                StringUtil.join(schemas, " OR ", obj -> " REFERENCED_NAME like '" + obj + ".%' OR REFERENCED_NAME NOT LIKE '%.%'") + ")\n" +
                 " AND (CONTYPE::text != 'p' AND CONTYPE::text != 'f')\n" +
                 " AND referencing_schema_name is not null and referencing_name is not null";
     }
@@ -841,7 +846,7 @@ public class DiffToChangeLog {
             }
 
             if ((changes != null) && (changes.length > 0)) {
-                desc = " ("+ StringUtil.join(changes, " :: ", (StringUtil.StringUtilFormatter<Change>) Change::getDescription) + ")";
+                desc = " ("+ StringUtil.join(changes, " :: ", Change::getDescription) + ")";
             }
 
             if (desc.length() > 150) {
@@ -975,7 +980,7 @@ public class DiffToChangeLog {
         }
 
 
-        private Node getNode(Class<? extends DatabaseObject> type) {
+        private Node getNode(Class<DatabaseObject<?>> type) {
             Node node = allNodes.get(type);
             if (node == null) {
                 node = new Node(type);

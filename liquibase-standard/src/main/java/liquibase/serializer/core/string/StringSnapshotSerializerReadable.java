@@ -40,10 +40,9 @@ public class StringSnapshotSerializerReadable implements SnapshotSerializer {
             buffer.append("Database user: ").append(database.getConnection().getConnectionUserName()).append("\n");
 
             SnapshotControl snapshotControl = snapshot.getSnapshotControl();
-            List<Class> includedTypes = sort(snapshotControl.getTypesToInclude());
+            List<Class<? extends DatabaseObject>> includedTypes = sort(snapshotControl.getTypesToInclude());
 
-            buffer.append("Included types:\n" ).append(StringUtil.indent(StringUtil.join(includedTypes, "\n", (StringUtil.StringUtilFormatter<Class>) Class::getName))).append("\n");
-
+            buffer.append("Included types:\n" ).append(StringUtil.indent(StringUtil.join(includedTypes, "\n", Class::getName))).append("\n");
 
             List<Schema> schemas = sort(snapshot.get(Schema.class), Comparator.comparing(Schema::toString));
 
@@ -183,10 +182,10 @@ public class StringSnapshotSerializerReadable implements SnapshotSerializer {
         buffer.append("-----------------------------------------------------------------\n");
     }
 
-    private List sort(Collection objects) {
-        return sort(objects, (Comparator) (o1, o2) -> {
+    private <T> List<T> sort(Collection<T> objects) {
+        return sort(objects, (Comparator<T>) (o1, o2) -> {
             if (o1 instanceof Comparable) {
-                return ((Comparable) o1).compareTo(o2);
+                return ((Comparable<T>) o1).compareTo(o2);
             } else if (o1 instanceof Class) {
                 return ((Class<?>) o1).getName().compareTo(((Class<?>) o2).getName());
             } else {
@@ -195,10 +194,9 @@ public class StringSnapshotSerializerReadable implements SnapshotSerializer {
         });
     }
 
-    private <T> List<T> sort(Collection objects, Comparator<T> comparator) {
-        List returnList = new ArrayList(objects);
+    private <T> List<T> sort(Collection<T> objects, Comparator<T> comparator) {
+        List<T> returnList = new ArrayList<>(objects);
         returnList.sort(comparator);
-
         return returnList;
     }
 

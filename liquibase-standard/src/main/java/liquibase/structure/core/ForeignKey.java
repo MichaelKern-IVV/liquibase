@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ForeignKey extends AbstractDatabaseObject{
+public class ForeignKey extends AbstractDatabaseObject<ForeignKey>{
 
     public ForeignKey() {
         setForeignKeyColumns(new ArrayList<>());
@@ -33,7 +33,7 @@ public class ForeignKey extends AbstractDatabaseObject{
     }
 
     @Override
-    public DatabaseObject[] getContainingObjects() {
+    public DatabaseObject<?>[] getContainingObjects() {
 
         List<Column> objects = new ArrayList<>();
         if (getPrimaryKeyColumns() != null) {
@@ -67,7 +67,7 @@ public class ForeignKey extends AbstractDatabaseObject{
     }
 
     public List<Column> getPrimaryKeyColumns() {
-        return getAttribute("primaryKeyColumns", List.class);
+        return (List<Column>) getAttribute("primaryKeyColumns", List.class);
     }
 
     public ForeignKey setPrimaryKeyColumns(List<Column> primaryKeyColumns) {
@@ -81,7 +81,7 @@ public class ForeignKey extends AbstractDatabaseObject{
     }
 
     public ForeignKey addPrimaryKeyColumn(Column primaryKeyColumn) {
-        this.getAttribute("primaryKeyColumns", List.class).add(primaryKeyColumn);
+        getPrimaryKeyColumns().add(primaryKeyColumn);
         if (primaryKeyColumn.getAttribute("relation", Object.class) == null) {
             primaryKeyColumn.setRelation(getPrimaryKeyTable());
         }
@@ -99,7 +99,7 @@ public class ForeignKey extends AbstractDatabaseObject{
     }
 
     public List<Column> getForeignKeyColumns() {
-        return getAttribute("foreignKeyColumns", List.class);
+        return (List<Column>) getAttribute("foreignKeyColumns", List.class);
     }
 
     public ForeignKey setForeignKeyColumns(List<Column> foreignKeyColumns) {
@@ -118,7 +118,7 @@ public class ForeignKey extends AbstractDatabaseObject{
         if (foreignKeyColumn.getAttribute("relation", Object.class) == null) {
             foreignKeyColumn.setRelation(getForeignKeyTable());
         }
-        getAttribute("foreignKeyColumns", List.class).add(foreignKeyColumn);
+        getForeignKeyColumns().add(foreignKeyColumn);
 
         return this;
     }
@@ -254,31 +254,30 @@ public class ForeignKey extends AbstractDatabaseObject{
 
 
     @Override
-    public int compareTo(Object other) {
+    public int compareTo(ForeignKey other) {
         StringUtil.StringUtilFormatter<Column> formatter = obj -> obj.toString(false);
 
-        ForeignKey o = (ForeignKey) other;
         int returnValue = 0;
-        if ((this.getForeignKeyTable() != null) && (o.getForeignKeyTable() != null)) {
-            returnValue = this.getForeignKeyTable().compareTo(o.getForeignKeyTable());
+        if ((this.getForeignKeyTable() != null) && (other.getForeignKeyTable() != null)) {
+            returnValue = this.getForeignKeyTable().compareTo(other.getForeignKeyTable());
         }
-        if ((returnValue == 0) && (this.getForeignKeyColumns() != null) && (o.getForeignKeyColumns() != null)) {
-            returnValue = StringUtil.join(this.getForeignKeyColumns(), ",", formatter).compareToIgnoreCase(StringUtil.join(o.getForeignKeyColumns(), ",", formatter));
+        if ((returnValue == 0) && (this.getForeignKeyColumns() != null) && (other.getForeignKeyColumns() != null)) {
+            returnValue = StringUtil.join(this.getForeignKeyColumns(), ",", formatter).compareToIgnoreCase(StringUtil.join(other.getForeignKeyColumns(), ",", formatter));
         }
-        if ((returnValue == 0) && (this.getName() != null) && (o.getName() != null)) {
-            returnValue = this.getName().compareToIgnoreCase(o.getName());
+        if ((returnValue == 0) && (this.getName() != null) && (other.getName() != null)) {
+            returnValue = this.getName().compareToIgnoreCase(other.getName());
         }
-        if ((returnValue == 0) && (this.getPrimaryKeyTable() != null) && (o.getPrimaryKeyTable() != null)) {
-            returnValue = this.getPrimaryKeyTable().compareTo(o.getPrimaryKeyTable());
+        if ((returnValue == 0) && (this.getPrimaryKeyTable() != null) && (other.getPrimaryKeyTable() != null)) {
+            returnValue = this.getPrimaryKeyTable().compareTo(other.getPrimaryKeyTable());
         }
 
-        if ((returnValue == 0) && (this.getPrimaryKeyColumns() != null) && (o.getPrimaryKeyColumns() != null)) {
-            returnValue = StringUtil.join(this.getPrimaryKeyColumns(), ",", formatter).compareToIgnoreCase(StringUtil.join(o.getPrimaryKeyColumns(), ",", formatter));
+        if ((returnValue == 0) && (this.getPrimaryKeyColumns() != null) && (other.getPrimaryKeyColumns() != null)) {
+            returnValue = StringUtil.join(this.getPrimaryKeyColumns(), ",", formatter).compareToIgnoreCase(StringUtil.join(other.getPrimaryKeyColumns(), ",", formatter));
         }
-        if ((returnValue == 0) && (this.getUpdateRule() != null) && (o.getUpdateRule() != null))
-            returnValue = this.getUpdateRule().compareTo(o.getUpdateRule());
-        if ((returnValue == 0) && (this.getDeleteRule() != null) && (o.getDeleteRule() != null))
-            returnValue = this.getDeleteRule().compareTo(o.getDeleteRule());
+        if ((returnValue == 0) && (this.getUpdateRule() != null) && (other.getUpdateRule() != null))
+            returnValue = this.getUpdateRule().compareTo(other.getUpdateRule());
+        if ((returnValue == 0) && (this.getDeleteRule() != null) && (other.getDeleteRule() != null))
+            returnValue = this.getDeleteRule().compareTo(other.getDeleteRule());
         return returnValue;
     }
 

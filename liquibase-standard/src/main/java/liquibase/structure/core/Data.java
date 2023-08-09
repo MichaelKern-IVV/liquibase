@@ -4,7 +4,7 @@ import liquibase.GlobalConfiguration;
 import liquibase.structure.AbstractDatabaseObject;
 import liquibase.structure.DatabaseObject;
 
-public class Data extends AbstractDatabaseObject {
+public class Data extends AbstractDatabaseObject<Data> {
 
     @Override
     public boolean snapshotByDefault() {
@@ -20,7 +20,6 @@ public class Data extends AbstractDatabaseObject {
 
         return this;
     }
-
 
     @Override
     public DatabaseObject[] getContainingObjects() {

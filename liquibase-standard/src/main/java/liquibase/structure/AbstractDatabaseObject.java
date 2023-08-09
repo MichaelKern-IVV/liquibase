@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  * Core features of this class include the functionality for the attributes collection ( {@link #getAttributes()} }
  * and the ability to load an object from a serialised form {@link #load(ParsedNode, ResourceAccessor)} .
  */
-public abstract class AbstractDatabaseObject implements DatabaseObject {
+public abstract class AbstractDatabaseObject<S extends AbstractDatabaseObject<S>> implements DatabaseObject<S> {
 
     private final Map<String, Object> attributes = new HashMap<>();
     private static final String CURLY_BRACKET_REGEX = "(.*)!\\{(.*)\\}";
@@ -57,8 +57,7 @@ public abstract class AbstractDatabaseObject implements DatabaseObject {
     }
 
     @Override
-    public int compareTo(Object o) {
-        AbstractDatabaseObject that = (AbstractDatabaseObject) o;
+    public int compareTo(S that) {
         if ((this.getSchema() != null) && (that.getSchema() != null)) {
             if (shouldIncludeCatalogInSpecification()) {
                 String thisCatalogName = this.getSchema().getCatalogName();

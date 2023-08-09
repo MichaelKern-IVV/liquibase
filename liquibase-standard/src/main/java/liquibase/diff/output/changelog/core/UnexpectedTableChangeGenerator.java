@@ -33,7 +33,7 @@ public class UnexpectedTableChangeGenerator extends AbstractChangeGenerator impl
     }
 
     @Override
-    public Change[] fixUnexpected(DatabaseObject unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixUnexpected(DatabaseObject<?> unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
         Table unexpectedTable = (Table) unexpectedObject;
 
         DropTableChange change = new DropTableChange();
@@ -59,6 +59,5 @@ public class UnexpectedTableChangeGenerator extends AbstractChangeGenerator impl
         }
 
         return new Change[] { change };
-
     }
 }

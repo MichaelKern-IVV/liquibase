@@ -17,7 +17,7 @@ public class DiffResultsSummary implements CustomMdcObject {
 
     public DiffResultsSummary(DiffResult diffResult) {
         this.missing = 0;
-        for (DatabaseObject missingObject : diffResult.getMissingObjects()) {
+        for (DatabaseObject<?> missingObject : diffResult.getMissingObjects()) {
             if (diffResult.getReferenceSnapshot().getSnapshotControl().shouldInclude(missingObject)) {
                 this.missing++;
             }

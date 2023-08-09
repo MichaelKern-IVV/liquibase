@@ -117,12 +117,11 @@ public class OfflineChangeLogHistoryService extends AbstractChangeLogHistoryServ
 
     }
 
-    protected void writeHeader(File file) throws IOException {
+    protected void writeHeader(File file) throws Exception {
         try (OutputStream outputStream = Files.newOutputStream(file.toPath());
-             Writer writer = new OutputStreamWriter(outputStream,
-                     GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue())
+             Writer writer = new OutputStreamWriter(outputStream, GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue());
+             CSVWriter csvWriter = new CSVWriter(writer);
         ) {
-            CSVWriter csvWriter = new CSVWriter(writer);
             String[] columns = new String[Columns.values().length];
             int i = 0;
             for (Columns column : Columns.values()) {
@@ -146,10 +145,10 @@ public class OfflineChangeLogHistoryService extends AbstractChangeLogHistoryServ
     @Override
     public List<RanChangeSet> getRanChangeSets() throws DatabaseException {
         try (
-                Reader reader = new InputStreamReader(Files.newInputStream(this.changeLogFile.toPath()), GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue())
+             Reader reader = new InputStreamReader(Files.newInputStream(this.changeLogFile.toPath()), GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue());
+             CSVReader csvReader = new CSVReader(reader);
         )
         {
-            CSVReader csvReader = new CSVReader(reader);
             String[] line = csvReader.readNext();
 
             if (line == null) { //empty file
@@ -315,11 +314,10 @@ public class OfflineChangeLogHistoryService extends AbstractChangeLogHistoryServ
             lastChangeSetSequenceValue = 0;
 
             try (
-                    Reader reader = new InputStreamReader(Files.newInputStream(this.changeLogFile.toPath()), GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue())
+                    Reader reader = new InputStreamReader(Files.newInputStream(this.changeLogFile.toPath()), GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue());
+                    CSVReader csvReader = new CSVReader(reader);
             )
             {
-                
-                CSVReader csvReader = new CSVReader(reader);
                 String[] line = csvReader.readNext(); //skip header line
 
                 while ((line = csvReader.readNext()) != null) {

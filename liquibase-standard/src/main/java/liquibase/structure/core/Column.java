@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class Column extends AbstractDatabaseObject {
+public class Column extends AbstractDatabaseObject<Column> {
 
     private String name;
     private Boolean computed;
@@ -247,27 +247,25 @@ public class Column extends AbstractDatabaseObject {
         }
     }
 
-
     @Override
-    public int compareTo(Object other) {
-        Column o = (Column) other;
+    public int compareTo(Column that) {
         try {
             //noinspection UnusedAssignment
             int returnValue = 0;
-            if ((this.getRelation() != null) && (o.getRelation() == null)) {
+            if ((this.getRelation() != null) && (that.getRelation() == null)) {
                 return 1;
-            } else if ((this.getRelation() == null) && (o.getRelation() != null)) {
+            } else if ((this.getRelation() == null) && (that.getRelation() != null)) {
                 return -1;
-            } else if (this.getRelation() != null && o.getRelation() != null) {
-                returnValue = this.getRelation().compareTo(o.getRelation());
-                if ((returnValue == 0) && (this.getRelation().getSchema() != null) && (o.getRelation().getSchema() !=
+            } else if (this.getRelation() != null && that.getRelation() != null) {
+                returnValue = this.getRelation().compareTo(that.getRelation());
+                if ((returnValue == 0) && (this.getRelation().getSchema() != null) && (that.getRelation().getSchema() !=
                     null)) {
-                    returnValue = this.getSchema().compareTo(o.getRelation().getSchema());
+                    returnValue = this.getSchema().compareTo(that.getRelation().getSchema());
                 }
             }
 
             if (returnValue == 0) {
-                returnValue = this.toString().toUpperCase().compareTo(o.toString().toUpperCase());
+                returnValue = this.toString().toUpperCase().compareTo(that.toString().toUpperCase());
             }
 
             return returnValue;
@@ -275,7 +273,6 @@ public class Column extends AbstractDatabaseObject {
             throw new RuntimeException(e);
         }
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -479,4 +476,3 @@ public class Column extends AbstractDatabaseObject {
         return fields;
     }
 }
-

@@ -46,10 +46,10 @@ public class ObjectDifferences {
         return !differences.isEmpty();
     }
 
-    public void compare(String attribute, DatabaseObject referenceObject, DatabaseObject compareToObject, CompareFunction compareFunction) {
+    public void compare(String attribute, DatabaseObject<?> referenceObject, DatabaseObject<?> compareToObject, CompareFunction compareFunction) {
         compare(null, attribute, referenceObject, compareToObject, compareFunction);
     }
-    public void compare(String message, String attribute, DatabaseObject referenceObject, DatabaseObject compareToObject, CompareFunction compareFunction) {
+    public void compare(String message, String attribute, DatabaseObject<?> referenceObject, DatabaseObject<?> compareToObject, CompareFunction compareFunction) {
         if (compareControl.isSuppressedField(referenceObject.getClass(), attribute)) {
             return;
         }
@@ -168,15 +168,14 @@ public class ObjectDifferences {
         }
     }
 
-    public static class DatabaseObjectNameCompareFunction implements CompareFunction {
+    public static class DatabaseObjectNameCompareFunction<T extends DatabaseObject<?>> implements CompareFunction {
 
         private final Database accordingTo;
-        private final Class<? extends DatabaseObject> type;
+        private final Class<T> type;
 
-        public DatabaseObjectNameCompareFunction(Class<? extends DatabaseObject> type, Database accordingTo) {
+        public DatabaseObjectNameCompareFunction(Class<T> type, Database accordingTo) {
             this.type = type;
             this.accordingTo = accordingTo;
-
         }
 
         @Override
@@ -210,14 +209,14 @@ public class ObjectDifferences {
 
             String object1Name;
             if (referenceValue instanceof DatabaseObject) {
-                object1Name = accordingTo.correctObjectName(((DatabaseObject) referenceValue).getAttribute("name", String.class), type);
+                object1Name = accordingTo.correctObjectName(((DatabaseObject<?>) referenceValue).getAttribute("name", String.class), type);
             } else {
                 object1Name = referenceValue.toString();
             }
 
             String object2Name;
             if (compareToValue instanceof DatabaseObject) {
-                object2Name = accordingTo.correctObjectName(((DatabaseObject) compareToValue).getAttribute("name", String.class), type);
+                object2Name = accordingTo.correctObjectName(((DatabaseObject<?>) compareToValue).getAttribute("name", String.class), type);
             } else {
                 object2Name = compareToValue.toString();
             }
@@ -233,7 +232,6 @@ public class ObjectDifferences {
             } else {
                 return object1Name.equalsIgnoreCase(object2Name);
             }
-
         }
     }
 

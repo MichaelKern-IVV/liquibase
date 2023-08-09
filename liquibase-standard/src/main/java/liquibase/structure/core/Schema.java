@@ -8,7 +8,7 @@ import liquibase.util.StringUtil;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Schema extends AbstractDatabaseObject {
+public class Schema extends AbstractDatabaseObject<Schema> {
 
     public Schema() {
         setAttribute("objects",  new ConcurrentHashMap<Class<? extends DatabaseObject>, Set<DatabaseObject>>());

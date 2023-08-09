@@ -60,7 +60,7 @@ public class AddPrimaryKeyStatement extends AbstractSqlStatement {
     }
 
     public String getColumnNames() {
-        return StringUtil.join(columns, ", ", (StringUtil.StringUtilFormatter<ColumnConfig>) obj -> obj.getName() + (obj.getDescending() != null && obj.getDescending() ? " DESC" : ""));
+        return StringUtil.join(columns, ", ", obj -> obj.getName() + (obj.getDescending() != null && obj.getDescending() ? " DESC" : ""));
     }
 
 

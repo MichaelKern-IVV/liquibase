@@ -14,14 +14,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class DefaultDatabaseObjectComparator implements DatabaseObjectComparator {
+public final class DefaultDatabaseObjectComparator<T extends DatabaseObject<T>> implements DatabaseObjectComparator<T> {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         return PRIORITY_DEFAULT;
     }
 
     @Override
-    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
         String name = databaseObject.getName();
         if (name == null) {
             name = "null";
@@ -30,7 +30,7 @@ public final class DefaultDatabaseObjectComparator implements DatabaseObjectComp
     }
 
     @Override
-    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
         if ((databaseObject1.getSchema() != null) && (databaseObject2.getSchema() != null) &&
             !DatabaseObjectComparatorFactory.getInstance().isSameObject(databaseObject1.getSchema(),
                 databaseObject2.getSchema(), chain.getSchemaComparisons(), accordingTo)) {
@@ -41,11 +41,10 @@ public final class DefaultDatabaseObjectComparator implements DatabaseObjectComp
             return nameMatches(databaseObject1, databaseObject2, accordingTo);
         }
         return false;
-
     }
 
     @Override
-    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
 
         Set<String> attributes = new HashSet<>();
         attributes.addAll(databaseObject1.getAttributes());
@@ -68,11 +67,11 @@ public final class DefaultDatabaseObjectComparator implements DatabaseObjectComp
 
             ObjectDifferences.CompareFunction compareFunction;
             if ((attribute1 instanceof DatabaseObject) || (attribute2 instanceof DatabaseObject)) {
-                Class<? extends DatabaseObject> type;
+                Class<? extends DatabaseObject<?>> type;
                 if (attribute1 != null) {
-                    type = (Class<? extends DatabaseObject>) attribute1.getClass();
+                    type = (Class<? extends DatabaseObject<?>>) attribute1.getClass();
                 } else {
-                    type = (Class<? extends DatabaseObject>) attribute2.getClass();
+                    type = (Class<? extends DatabaseObject<?>>) attribute2.getClass();
                 }
                 compareFunction = new ObjectDifferences.DatabaseObjectNameCompareFunction(type, accordingTo);
             } else if ((attribute1 instanceof DataType) || (attribute2 instanceof DataType)) {
@@ -109,7 +108,7 @@ public final class DefaultDatabaseObjectComparator implements DatabaseObjectComp
     }
 
     //Static so it can be used in other comparators if needed
-    public static boolean nameMatches(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo) {
+    public static <T extends DatabaseObject<T>> boolean nameMatches(T databaseObject1, T databaseObject2, Database accordingTo) {
         String object1Name = accordingTo.correctObjectName(databaseObject1.getName(), databaseObject1.getClass());
         String object2Name = accordingTo.correctObjectName(databaseObject2.getName(), databaseObject2.getClass());
 
@@ -125,5 +124,4 @@ public final class DefaultDatabaseObjectComparator implements DatabaseObjectComp
             return object1Name.equalsIgnoreCase(object2Name);
         }
     }
-
 }

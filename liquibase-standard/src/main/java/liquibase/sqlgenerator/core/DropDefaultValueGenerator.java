@@ -14,7 +14,7 @@ import java.util.function.BiFunction;
 
 public class DropDefaultValueGenerator extends AbstractSqlGenerator<DropDefaultValueStatement> {
 
-    public static BiFunction DROP_DF_MSSQL = (tableName, columnName) -> "DECLARE @sql [nvarchar](MAX)\r\n" +
+    public static BiFunction<String,String,String> DROP_DF_MSSQL = (tableName, columnName) -> "DECLARE @sql [nvarchar](MAX)\r\n" +
             "SELECT @sql = N'ALTER TABLE " + tableName + " DROP CONSTRAINT ' + QUOTENAME([df].[name]) " +
             "FROM [sys].[columns] AS [c] " +
             "INNER JOIN [sys].[default_constraints] AS [df] " +

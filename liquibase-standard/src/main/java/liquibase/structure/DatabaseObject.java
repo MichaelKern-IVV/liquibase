@@ -21,7 +21,7 @@ import java.util.Set;
  *
  * @see AbstractDatabaseObject
  */
-public interface DatabaseObject extends Comparable, LiquibaseSerializable {
+public interface DatabaseObject<S extends DatabaseObject> extends Comparable<S>, LiquibaseSerializable {
 
     String getSnapshotId();
 

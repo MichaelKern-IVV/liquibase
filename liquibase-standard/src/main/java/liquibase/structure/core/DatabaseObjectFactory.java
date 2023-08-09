@@ -34,7 +34,7 @@ public class DatabaseObjectFactory {
             Set<String> typesToInclude = new HashSet<>(Arrays.asList(typesString.toLowerCase().split("\\s*,\\s*")));
             Set<String> typesNotFound = new HashSet<>(typesToInclude);
 
-            for (DatabaseObject object : Scope.getCurrentScope().getServiceLocator().findInstances(DatabaseObject.class)) {
+            for (DatabaseObject<?> object : Scope.getCurrentScope().getServiceLocator().findInstances(DatabaseObject.class)) {
                 Class<? extends DatabaseObject> clazz = object.getClass();
                 if (typesToInclude.contains(clazz.getSimpleName().toLowerCase())
                         || typesToInclude.contains(clazz.getSimpleName().toLowerCase()+"s")

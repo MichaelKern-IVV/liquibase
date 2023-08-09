@@ -6,7 +6,7 @@ import liquibase.structure.DatabaseObject;
 
 import java.util.Set;
 
-public interface DatabaseObjectComparator {
+public interface DatabaseObjectComparator<T extends DatabaseObject<T>> {
 
     int PRIORITY_NONE = -1;
     int PRIORITY_DEFAULT = 1;
@@ -15,9 +15,9 @@ public interface DatabaseObjectComparator {
 
     int getPriority(Class<? extends DatabaseObject> objectType, Database database);
 
-    boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain);
+    boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain);
 
-    String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain);
+    String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain);
 
-    ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude);
+    ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude);
 }

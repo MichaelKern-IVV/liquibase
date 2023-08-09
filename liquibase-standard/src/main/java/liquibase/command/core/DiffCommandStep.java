@@ -161,7 +161,7 @@ public class DiffCommandStep extends AbstractCommandStep {
         Database referenceDatabase = (Database) commandScope.getDependency(ReferenceDatabase.class);
 
         CompareControl compareControl = (CompareControl) resultsBuilder.getResult(PreCompareCommandStep.COMPARE_CONTROL_RESULT.getName());
-        Class<? extends DatabaseObject>[] snapshotTypes = (Class<? extends DatabaseObject>[]) resultsBuilder
+        Class<? extends DatabaseObject<?>>[] snapshotTypes = (Class<? extends DatabaseObject<?>>[]) resultsBuilder
                 .getResult(PreCompareCommandStep.SNAPSHOT_TYPES_RESULT.getName());
         ObjectChangeFilter objectChangeFilter = (ObjectChangeFilter) resultsBuilder
                 .getResult(PreCompareCommandStep.OBJECT_CHANGE_FILTER_RESULT.getName());

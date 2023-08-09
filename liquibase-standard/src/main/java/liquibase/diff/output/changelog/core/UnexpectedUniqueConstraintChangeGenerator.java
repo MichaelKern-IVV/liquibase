@@ -35,7 +35,7 @@ public class UnexpectedUniqueConstraintChangeGenerator extends AbstractChangeGen
     }
 
     @Override
-    public Change[] fixUnexpected(DatabaseObject unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixUnexpected(DatabaseObject<?> unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
         UniqueConstraint uc = (UniqueConstraint) unexpectedObject;
         if (uc.getRelation() == null) {
             return null;

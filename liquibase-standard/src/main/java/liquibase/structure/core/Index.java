@@ -9,7 +9,7 @@ import liquibase.util.StringUtil;
 
 import java.util.*;
 
-public class Index extends AbstractDatabaseObject {
+public class Index extends AbstractDatabaseObject<Index> {
 
 	/** Marks Index as associated with Primary Key [PK] */
     public static final String MARK_PRIMARY_KEY = "primaryKey";
@@ -219,6 +219,7 @@ public class Index extends AbstractDatabaseObject {
         }
         return true;
     }
+
     public Boolean getClustered() {
         return getAttribute("clustered", Boolean.class);
     }
@@ -228,20 +229,19 @@ public class Index extends AbstractDatabaseObject {
     }
 
     @Override
-    public int compareTo(Object other) {
-        Index o = (Index) other;
+    public int compareTo(Index that) {
         int returnValue = 0;
 
-        if ((this.getRelation() != null) && (o.getRelation() != null)) {
-            returnValue = this.getRelation().compareTo(o.getRelation());
-            if ((returnValue == 0) && (this.getRelation().getSchema() != null) && (o.getRelation().getSchema() != null)) {
-                returnValue = StringUtil.trimToEmpty(this.getRelation().getSchema().getName()).compareToIgnoreCase(StringUtil.trimToEmpty(o.getRelation().getSchema().getName()));
+        if ((this.getRelation() != null) && (that.getRelation() != null)) {
+            returnValue = this.getRelation().compareTo(that.getRelation());
+            if ((returnValue == 0) && (this.getRelation().getSchema() != null) && (that.getRelation().getSchema() != null)) {
+                returnValue = StringUtil.trimToEmpty(this.getRelation().getSchema().getName()).compareToIgnoreCase(StringUtil.trimToEmpty(that.getRelation().getSchema().getName()));
             }
         }
 
         if (returnValue == 0) {
             String thisName = StringUtil.trimToEmpty(this.getName());
-            String oName = StringUtil.trimToEmpty(o.getName());
+            String oName = StringUtil.trimToEmpty(that.getName());
             returnValue = thisName.compareTo(oName);
         }
 
@@ -263,7 +263,7 @@ public class Index extends AbstractDatabaseObject {
             return false;
         }
 
-        return this.compareTo(obj) == 0;
+        return this.compareTo((Index)obj) == 0;
     }
 
     /**

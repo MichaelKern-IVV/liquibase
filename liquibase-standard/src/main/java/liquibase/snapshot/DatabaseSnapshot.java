@@ -33,7 +33,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
     private static final Logger LOGGER = Scope.getCurrentScope().getLog(DatabaseSnapshot.class);
     public static final String ALL_CATALOGS_STRING_SCRATCH_KEY = "DatabaseSnapshot.allCatalogsString";
 
-    private final DatabaseObject[] originalExamples;
+    private final DatabaseObject<?>[] originalExamples;
     private final HashSet<String> serializableFields;
     private final SnapshotControl snapshotControl;
     private final Database database;
@@ -48,7 +48,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
 
     private Map<String, Object> metadata = new ConcurrentHashMap<>();
 
-    DatabaseSnapshot(DatabaseObject[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
+    DatabaseSnapshot(DatabaseObject<?>[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
         this.database = database;
         allFound = new DatabaseObjectCollection(database);
         referencedObjects = new DatabaseObjectCollection(database);
@@ -67,11 +67,11 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         this.serializableFields.add("metadata");
     }
 
-    public DatabaseSnapshot(DatabaseObject[] examples, Database database) throws DatabaseException, InvalidExampleException {
+    public DatabaseSnapshot(DatabaseObject<?>[] examples, Database database) throws DatabaseException, InvalidExampleException {
         this(examples, database, new SnapshotControl(database));
     }
 
-    protected void init(DatabaseObject[] examples) throws DatabaseException, InvalidExampleException {
+    protected void init(DatabaseObject<?>[] examples) throws DatabaseException, InvalidExampleException {
         if (examples != null) {
             Set<Catalog> catalogs = new HashSet<>();
             for (DatabaseObject object : examples) {
@@ -100,7 +100,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
                     include(catalog);
                 }
             }
-            for (DatabaseObject obj : examples) {
+            for (DatabaseObject<?> obj : examples) {
                 this.snapshotControl.addType(obj.getClass(), database);
 
                 include(obj);
@@ -128,7 +128,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
                 if (example instanceof Schema) {
                     for (Class<? extends DatabaseObject> type : this.snapshotControl.getTypesToInclude()) {
 
-                        for (DatabaseObject object : this.get(type)) {
+                        for (DatabaseObject<?> object : this.get(type)) {
                             if (object.getSchema() == null) {
                                 if (object instanceof Catalog) {
                                     if (DatabaseObjectComparatorFactory.getInstance().isSameObject(object, ((Schema) example).getCatalog(), null, database)) {
@@ -305,7 +305,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
 
         SnapshotListener snapshotListener = snapshotControl.getSnapshotListener();
 
-        SnapshotGeneratorChain chain = createGeneratorChain(example.getClass(), database);
+        SnapshotGeneratorChain chain = createGeneratorChain((Class<? extends DatabaseObject<?>>) example.getClass(), database);
         if (snapshotListener != null) {
             snapshotListener.willSnapshot(example, database);
         }
@@ -313,7 +313,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         T object = chain.snapshot(example, this);
 
         if (object == null) {
-            Set<DatabaseObject> collection = knownNull.computeIfAbsent(example.getClass(), k -> new HashSet<>());
+            Set<DatabaseObject> collection = knownNull.computeIfAbsent((Class<? extends DatabaseObject<?>>) example.getClass(), k -> new HashSet<>());
             collection.add(example);
 
             if (example instanceof Schema) {
@@ -342,7 +342,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         return object;
     }
 
-    private void includeNestedObjects(DatabaseObject object) throws DatabaseException, InvalidExampleException, ReflectiveOperationException {
+    private void includeNestedObjects(DatabaseObject<?> object) throws DatabaseException, InvalidExampleException, ReflectiveOperationException {
         for (String field : new HashSet<>(object.getAttributes())) {
             Object fieldValue = object.getAttribute(field, Object.class);
             //
@@ -608,7 +608,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
             loadObjects(referencedObjects, allObjects, parsedNode.getChild(null, "referencedObjects"), resourceAccessor);
             loadObjects(objects, allObjects, parsedNode.getChild(null, "objects"), resourceAccessor);
 
-            for (DatabaseObject object : allObjects.values()) {
+            for (DatabaseObject<?> object : allObjects.values()) {
                 for (String attr : new ArrayList<>(object.getAttributes())) {
                     Object value = object.getAttribute(attr, Object.class);
                     if ((value instanceof String) && allObjects.containsKey(value)) {

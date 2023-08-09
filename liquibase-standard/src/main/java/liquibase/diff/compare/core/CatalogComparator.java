@@ -13,7 +13,7 @@ import liquibase.util.StringUtil;
 
 import java.util.Set;
 
-public class CatalogComparator extends CommonCatalogSchemaComparator {
+public class CatalogComparator extends CommonCatalogSchemaComparator<Catalog> {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         if (Catalog.class.isAssignableFrom(objectType)) {
@@ -23,15 +23,12 @@ public class CatalogComparator extends CommonCatalogSchemaComparator {
     }
 
     @Override
-    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public String[] hash(Catalog databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
         return null;
     }
 
     @Override
-    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        if (!((databaseObject1 instanceof Catalog) && (databaseObject2 instanceof Catalog))) {
-            return false;
-        }
+    public boolean isSameObject(Catalog thisCatalog, Catalog thatCatalog, Database accordingTo, DatabaseObjectComparatorChain chain) {
 
         if (!accordingTo.supportsCatalogs()) {
             return true;
@@ -40,17 +37,17 @@ public class CatalogComparator extends CommonCatalogSchemaComparator {
         // the flag will be set true in multi catalog environments
         boolean shouldIncludeCatalog = GlobalConfiguration.INCLUDE_CATALOG_IN_SPECIFICATION.getCurrentValue();
         String object1Name;
-        if (!shouldIncludeCatalog && ((Catalog) databaseObject1).isDefault()) {
+        if (!shouldIncludeCatalog && thisCatalog.isDefault()) {
             object1Name = null;
         } else {
-            object1Name = databaseObject1.getName();
+            object1Name = thisCatalog.getName();
         }
 
         String object2Name;
-        if (!shouldIncludeCatalog && ((Catalog) databaseObject2).isDefault()) {
+        if (!shouldIncludeCatalog && thatCatalog.isDefault()) {
             object2Name = null;
         } else {
-            object2Name = databaseObject2.getName();
+            object2Name = thatCatalog.getName();
         }
 
         CatalogAndSchema thisSchema = new CatalogAndSchema(object1Name, null).standardize(accordingTo);
@@ -97,9 +94,9 @@ public class CatalogComparator extends CommonCatalogSchemaComparator {
     }
 
     @Override
-    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Catalog thisCatalog, Catalog thatCatalog, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
         ObjectDifferences differences = new ObjectDifferences(compareControl);
-        differences.compare("name", databaseObject1, databaseObject2, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
+        differences.compare("name", thisCatalog, thatCatalog, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
 
         return differences;
     }

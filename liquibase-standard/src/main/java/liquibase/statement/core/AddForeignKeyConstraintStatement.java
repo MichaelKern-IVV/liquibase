@@ -57,7 +57,7 @@ public class AddForeignKeyConstraintStatement extends AbstractSqlStatement {
     }
 
     public String getBaseColumnNames() {
-        return StringUtil.join(baseColumns, ", ", (StringUtil.StringUtilFormatter<ColumnConfig>) ColumnConfig::getName);
+        return StringUtil.join(baseColumns, ", ", ColumnConfig::getName);
     }
 
     public String getReferencedTableCatalogName() {
@@ -77,7 +77,7 @@ public class AddForeignKeyConstraintStatement extends AbstractSqlStatement {
     }
 
     public String getReferencedColumnNames() {
-        return StringUtil.join(referencedColumns, ", ", (StringUtil.StringUtilFormatter<ColumnConfig>) ColumnConfig::getName);
+        return StringUtil.join(referencedColumns, ", ", ColumnConfig::getName);
     }
 
     public String getConstraintName() {

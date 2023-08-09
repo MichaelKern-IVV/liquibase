@@ -17,7 +17,7 @@ public class DatabaseObjectComparatorFactory {
 
     private final List<DatabaseObjectComparator> comparators = new ArrayList<>();
 
-    private final Map<String, List<DatabaseObjectComparator>> validComparatorsByClassAndDatabase = new HashMap<>();
+    private final Map<String, List<DatabaseObjectComparator<?>>> validComparatorsByClassAndDatabase = new HashMap<>();
     private final Map<String, DatabaseObjectComparatorChain> comparatorChainsByClassAndDatabase = new HashMap<>();
 
     private DatabaseObjectComparatorFactory() {
@@ -70,20 +70,20 @@ public class DatabaseObjectComparatorFactory {
     }
 
     public DatabaseObjectComparator getComparator(Class<? extends DatabaseObject> comparatorClass, Database database) {
-        List<DatabaseObjectComparator> comparatorsForType = getComparators(comparatorClass, database);
+        List<DatabaseObjectComparator<?>> comparatorsForType = getComparators(comparatorClass, database);
         if (! comparatorsForType.isEmpty()) {
             return comparatorsForType.get(0);
         }
         return null;
     }
 
-    protected List<DatabaseObjectComparator> getComparators(Class<? extends DatabaseObject> comparatorClass, Database database) {
+    protected List<DatabaseObjectComparator<?>> getComparators(Class<? extends DatabaseObject> comparatorClass, Database database) {
         String key = comparatorClass.getName()+":"+database.getShortName();
         if (validComparatorsByClassAndDatabase.containsKey(key)) {
             return validComparatorsByClassAndDatabase.get(key);
         }
 
-        List<DatabaseObjectComparator> validComparators = new ArrayList<>();
+        List<DatabaseObjectComparator<?>> validComparators = new ArrayList<>();
 
         for (DatabaseObjectComparator comparator : comparators) {
             if (comparator.getPriority(comparatorClass, database) > 0) {
@@ -98,7 +98,7 @@ public class DatabaseObjectComparatorFactory {
         return validComparators;
     }
 
-    public boolean isSameObject(DatabaseObject object1, DatabaseObject object2, CompareControl.SchemaComparison[] schemaComparisons, Database accordingTo) {
+    public boolean isSameObject(DatabaseObject<?> object1, DatabaseObject<?> object2, CompareControl.SchemaComparison[] schemaComparisons, Database accordingTo) {
         if ((object1 == null) && (object2 == null)) {
             return true;
         }
@@ -153,7 +153,7 @@ public class DatabaseObjectComparatorFactory {
         return false;
     }
 
-    public String[] hash(DatabaseObject databaseObject, CompareControl.SchemaComparison[] schemaComparisons, Database accordingTo) {
+    public String[] hash(DatabaseObject<?> databaseObject, CompareControl.SchemaComparison[] schemaComparisons, Database accordingTo) {
         String[] hash = null;
         if (databaseObject != null) {
             final DatabaseObjectComparatorChain comparatorChain = createComparatorChain(databaseObject.getClass(), schemaComparisons, accordingTo);
@@ -194,7 +194,7 @@ public class DatabaseObjectComparatorFactory {
             return copy;
         }
 
-        List<DatabaseObjectComparator> comparators = DatabaseObjectComparatorFactory.getInstance().getComparators(databaseObjectType, database);
+        List<DatabaseObjectComparator<?>> comparators = DatabaseObjectComparatorFactory.getInstance().getComparators(databaseObjectType, database);
         if ((comparators == null) || comparators.isEmpty()) {
             return null;
         }

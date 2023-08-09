@@ -91,7 +91,7 @@ public class SnapshotControl implements LiquibaseSerializable {
     public Object getSerializableFieldValue(String field) {
         if ("includedType".equals(field)) {
             SortedSet<String> types = new TreeSet<>();
-            for (Class type : this.getTypesToInclude()) {
+            for (Class<? extends DatabaseObject> type : this.getTypesToInclude()) {
                 types.add(type.getName());
             }
             return types;

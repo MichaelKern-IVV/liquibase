@@ -109,7 +109,7 @@ public class ChangedPrimaryKeyChangeGenerator extends AbstractChangeGenerator im
             comparedColumns = (List<Column>) columnDifferences.getComparedValue();
         }
 
-        StringUtil.ToStringFormatter formatter = new StringUtil.ToStringFormatter();
+        StringUtil.ToStringFormatter<Column> formatter = new StringUtil.ToStringFormatter<>();
 
         control.setAlreadyHandledChanged(new Index().setRelation(pk.getTable()).setColumns(referenceColumns));
         if (!StringUtil.join(referenceColumns, ",", formatter).equalsIgnoreCase(StringUtil.join(comparedColumns, ",", formatter))) {

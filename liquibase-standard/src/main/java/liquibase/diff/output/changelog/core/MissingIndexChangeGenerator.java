@@ -36,7 +36,7 @@ public class MissingIndexChangeGenerator extends AbstractChangeGenerator impleme
     }
 
     @Override
-    public Change[] fixMissing(DatabaseObject missingObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixMissing(DatabaseObject<?> missingObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
         Index index = (Index) missingObject;
 
         if (comparisonDatabase instanceof MSSQLDatabase && index.getRelation() instanceof Table) {

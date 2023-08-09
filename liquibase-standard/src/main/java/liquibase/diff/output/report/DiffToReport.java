@@ -34,7 +34,7 @@ public class DiffToReport {
 
         CompareControl.SchemaComparison[] schemas = diffResult.getCompareControl().getSchemaComparisons();
         if ((schemas != null) && (schemas.length > 0)) {
-            out.println("Compared Schemas: " + StringUtil.join(Arrays.asList(schemas), ", ", (StringUtil.StringUtilFormatter<CompareControl.SchemaComparison>) obj -> {
+            out.println("Compared Schemas: " + StringUtil.join(Arrays.asList(schemas), ", ", obj -> {
                 String referenceName;
                 String comparisonName;
 
@@ -128,7 +128,7 @@ public class DiffToReport {
         }
     }
 
-    protected void printSetComparison(String title, Set<? extends DatabaseObject> objects, PrintStream out) {
+    protected void printSetComparison(String title, Set<DatabaseObject<?>> objects, PrintStream out) {
         out.print(title + ": ");
         Schema lastSchema = null;
         if (objects.isEmpty()) {
@@ -199,9 +199,9 @@ public class DiffToReport {
 
     }
 
-    public StringUtil.StringUtilFormatter createFormatter() {
+    public StringUtil.StringUtilFormatter<CompareControl.SchemaComparison> createFormatter() {
         return
-                (StringUtil.StringUtilFormatter<CompareControl.SchemaComparison>) obj -> {
+                obj -> {
                     String referenceName;
                     String comparisonName;
 

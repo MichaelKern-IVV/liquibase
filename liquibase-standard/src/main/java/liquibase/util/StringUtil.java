@@ -8,7 +8,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -314,7 +313,7 @@ public class StringUtil {
         return SqlParser.parse(multiLineSQL, true, false).toString().trim();
     }
 
-    public static String join(Object[] array, String delimiter, StringUtilFormatter formatter) {
+    public static <T> String join(T[] array, String delimiter, StringUtilFormatter<T> formatter) {
         if (array == null) {
             return null;
         }
@@ -329,11 +328,10 @@ public class StringUtil {
     }
 
     public static String join(Collection<String> collection, String delimiter) {
-        return join(collection, delimiter, new ToStringFormatter());
-
+        return join(collection, delimiter, new ToStringFormatter<String>());
     }
 
-    public static String join(Collection collection, String delimiter, StringUtilFormatter formatter) {
+    public static <T> String join(Collection<T> collection, String delimiter, StringUtilFormatter<T> formatter) {
         if (collection == null) {
             return null;
         }
@@ -343,18 +341,17 @@ public class StringUtil {
         }
 
         StringBuilder buffer = new StringBuilder();
-        for (Object val : collection) {
+        for (T val : collection) {
             buffer.append(formatter.toString(val)).append(delimiter);
         }
 
-        String returnString = buffer.toString();
-        return returnString.substring(0, returnString.length() - delimiter.length());
+        return buffer.substring(0, buffer.length() - delimiter.length());
     }
 
-    public static String join(Collection collection, String delimiter, StringUtilFormatter formatter, boolean sorted) {
+    public static <T> String join(Collection<T> collection, String delimiter, StringUtilFormatter<T> formatter, boolean sorted) {
         if (sorted) {
             TreeSet<String> sortedSet = new TreeSet<>();
-            for (Object obj : collection) {
+            for (T obj : collection) {
                 sortedSet.add(formatter.toString(obj));
             }
             return join(sortedSet, delimiter);
@@ -370,23 +367,23 @@ public class StringUtil {
         }
     }
 
-    public static String join(Map map, String delimiter) {
-        return join(map, delimiter, new ToStringFormatter());
+    public static String join(Map<String,?> map, String delimiter) {
+        return join(map, delimiter, new ToStringFormatter<Object>());
     }
 
-    public static String join(Map map, String delimiter, StringUtilFormatter formatter) {
+    public static String join(Map<String,?> map, String delimiter, StringUtilFormatter<Object> formatter) {
         List<String> list = new ArrayList<>();
-        for (Map.Entry entry : (Set<Map.Entry>) map.entrySet()) {
-            list.add(entry.getKey().toString() + "=" + formatter.toString(entry.getValue()));
+        for (Map.Entry<String,?> entry : map.entrySet()) {
+            list.add(entry.getKey() + "=" + formatter.toString(entry.getValue()));
         }
         return join(list, delimiter);
     }
 
     public static String join(ExtensibleObject extensibleObject, String delimiter) {
-        return join(extensibleObject, delimiter, new ToStringFormatter());
+        return join(extensibleObject, delimiter, new ToStringFormatter<Object>());
     }
 
-    public static String join(ExtensibleObject extensibleObject, String delimiter, StringUtilFormatter formatter) {
+    public static String join(ExtensibleObject extensibleObject, String delimiter, StringUtilFormatter<Object> formatter) {
         List<String> list = new ArrayList<>();
         for (String attribute : new TreeSet<>(extensibleObject.getAttributes())) {
             String formattedValue = formatter.toString(extensibleObject.get(attribute, Object.class));
@@ -741,13 +738,13 @@ public class StringUtil {
         return outString.toString();
     }
 
-    public interface StringUtilFormatter<Type> {
-        String toString(Type obj);
+    public interface StringUtilFormatter<T> {
+        String toString(T obj);
     }
 
-    public static class ToStringFormatter implements StringUtilFormatter {
+    public static class ToStringFormatter<T> implements StringUtilFormatter<T> {
         @Override
-        public String toString(Object obj) {
+        public String toString(T obj) {
             if (obj == null) {
                 return null;
             }
@@ -755,7 +752,7 @@ public class StringUtil {
         }
     }
 
-    public static class DefaultFormatter implements StringUtilFormatter {
+    public static class DefaultFormatter implements StringUtilFormatter<Object> {
         @Override
         public String toString(Object obj) {
             if (obj == null) {
@@ -772,7 +769,7 @@ public class StringUtil {
                 if (((Collection<?>) obj).size() == 0) {
                     return null;
                 } else {
-                    return "[" + StringUtil.join((Collection) obj, ", ", this) + "]";
+                    return "[" + StringUtil.join((Collection<Object>) obj, ", ", this) + "]";
                 }
 
             }

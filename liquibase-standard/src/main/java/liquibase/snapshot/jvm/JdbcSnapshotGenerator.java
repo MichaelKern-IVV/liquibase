@@ -60,12 +60,12 @@ public abstract class JdbcSnapshotGenerator implements SnapshotGenerator {
     }
 
     @Override
-    public DatabaseObject snapshot(DatabaseObject example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
+    public <T extends DatabaseObject<?>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
         if ((defaultFor != null) && defaultFor.isAssignableFrom(example.getClass())) {
-            return snapshotObject(example, snapshot);
+            return (T) snapshotObject(example, snapshot);
         }
 
-        DatabaseObject chainResponse = chain.snapshot(example, snapshot);
+        T chainResponse = chain.snapshot(example, snapshot);
         if (chainResponse == null) {
             return null;
         }
@@ -94,9 +94,9 @@ public abstract class JdbcSnapshotGenerator implements SnapshotGenerator {
         return null;
     }
 
-    protected abstract DatabaseObject snapshotObject(DatabaseObject example, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException;
+    protected abstract DatabaseObject<?> snapshotObject(DatabaseObject<?> example, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException;
 
-    protected abstract void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException;
+    protected abstract void addTo(DatabaseObject<?> foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException;
 
     public void addStatusListener(DiffStatusListener listener) {
         statusListeners.add(listener);

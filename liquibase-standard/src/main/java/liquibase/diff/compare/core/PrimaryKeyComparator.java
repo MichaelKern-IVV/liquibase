@@ -14,7 +14,7 @@ import liquibase.util.StringUtil;
 import java.util.List;
 import java.util.Set;
 
-public class PrimaryKeyComparator implements DatabaseObjectComparator {
+public class PrimaryKeyComparator implements DatabaseObjectComparator<PrimaryKey> {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         if (PrimaryKey.class.isAssignableFrom(objectType)) {
@@ -23,29 +23,22 @@ public class PrimaryKeyComparator implements DatabaseObjectComparator {
         return PRIORITY_NONE;
     }
 
-
     @Override
-    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        PrimaryKey pk = (PrimaryKey) databaseObject;
-        if (databaseObject.getName() == null) {
-            return DatabaseObjectComparatorFactory.getInstance().hash(pk.getTable(),chain.getSchemaComparisons(), accordingTo);
+    public String[] hash(PrimaryKey primaryKey, Database accordingTo, DatabaseObjectComparatorChain chain) {
+
+        if (primaryKey.getName() == null) {
+            return DatabaseObjectComparatorFactory.getInstance().hash(primaryKey.getTable(),chain.getSchemaComparisons(), accordingTo);
         } else {
-            if ((pk.getTable() == null) || (pk.getTable().getName() == null)) {
-                return new String[] {pk.getName().toLowerCase() };
+            if ((primaryKey.getTable() == null) || (primaryKey.getTable().getName() == null)) {
+                return new String[] {primaryKey.getName().toLowerCase() };
             } else {
-                return new String[] {pk.getName().toLowerCase(), pk.getTable().getName().toLowerCase()};
+                return new String[] {primaryKey.getName().toLowerCase(), primaryKey.getTable().getName().toLowerCase()};
             }
         }
     }
 
     @Override
-    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        if (!((databaseObject1 instanceof PrimaryKey) && (databaseObject2 instanceof PrimaryKey))) {
-            return false;
-        }
-
-        PrimaryKey thisPrimaryKey = (PrimaryKey) databaseObject1;
-        PrimaryKey otherPrimaryKey = (PrimaryKey) databaseObject2;
+    public boolean isSameObject(PrimaryKey thisPrimaryKey, PrimaryKey otherPrimaryKey, Database accordingTo, DatabaseObjectComparatorChain chain) {
 
         if ((thisPrimaryKey.getTable() != null) && (thisPrimaryKey.getTable().getName() != null) && (otherPrimaryKey
             .getTable() != null) && (otherPrimaryKey.getTable().getName() != null)) {
@@ -55,15 +48,14 @@ public class PrimaryKeyComparator implements DatabaseObjectComparator {
         }
     }
 
-
     @Override
-    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(PrimaryKey thisPrimaryKey, PrimaryKey otherPrimaryKey, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("backingIndex");
         exclude.add("columns");
-        ObjectDifferences differences = chain.findDifferences(databaseObject1, databaseObject2, accordingTo, compareControl, exclude);
+        ObjectDifferences differences = chain.findDifferences(thisPrimaryKey, otherPrimaryKey, accordingTo, compareControl, exclude);
 
-        differences.compare("columns", databaseObject1, databaseObject2, (referenceValue, compareToValue) -> {
+        differences.compare("columns", thisPrimaryKey, otherPrimaryKey, (referenceValue, compareToValue) -> {
             List<Column> referenceList = (List) referenceValue;
             List<Column> compareList = (List) compareToValue;
 

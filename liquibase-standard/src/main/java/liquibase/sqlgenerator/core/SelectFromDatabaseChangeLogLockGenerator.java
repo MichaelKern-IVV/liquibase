@@ -30,7 +30,7 @@ public class SelectFromDatabaseChangeLogLockGenerator extends AbstractSqlGenerat
         ObjectQuotingStrategy currentStrategy = database.getObjectQuotingStrategy();
         database.setObjectQuotingStrategy(ObjectQuotingStrategy.LEGACY);
         try {
-            String sql = "SELECT " + StringUtil.join(statement.getColumnsToSelect(), ",", (StringUtil.StringUtilFormatter<ColumnConfig>) col -> {
+            String sql = "SELECT " + StringUtil.join(statement.getColumnsToSelect(), ",", col -> {
                 if ((col.getComputed() != null) && col.getComputed()) {
                     return col.getName();
                 } else {

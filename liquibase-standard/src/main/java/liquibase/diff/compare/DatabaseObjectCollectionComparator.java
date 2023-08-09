@@ -6,10 +6,10 @@ import liquibase.util.StringUtil;
 
 import java.util.Comparator;
 
-public class DatabaseObjectCollectionComparator implements Comparator<DatabaseObject> {
+public class DatabaseObjectCollectionComparator implements Comparator<DatabaseObject<?>> {
 
     @Override
-    public int compare(DatabaseObject o1, DatabaseObject o2) {
+    public int compare(DatabaseObject<?> o1, DatabaseObject<?> o2) {
         Schema schema1 = o1.getSchema();
         Schema schema2 = o2.getSchema();
 

@@ -24,9 +24,9 @@ public class DiffResult {
     private StringDiff productNameDiff;
     private StringDiff productVersionDiff;
 
-    private final Set<DatabaseObject> missingObjects = new HashSet<>();
-    private final Set<DatabaseObject> unexpectedObjects = new HashSet<>();
-    private final Map<DatabaseObject, ObjectDifferences> changedObjects = new HashMap<>();
+    private final Set<DatabaseObject<?>> missingObjects = new HashSet<>();
+    private final Set<DatabaseObject<?>> unexpectedObjects = new HashSet<>();
+    private final Map<DatabaseObject<?>, ObjectDifferences> changedObjects = new HashMap<>();
 
 
     public DiffResult(DatabaseSnapshot referenceDatabaseSnapshot, DatabaseSnapshot comparisonDatabaseSnapshot, CompareControl compareControl) {
@@ -64,13 +64,13 @@ public class DiffResult {
         return compareControl;
     }
 
-    public Set<? extends DatabaseObject> getMissingObjects() {
+    public Set<DatabaseObject<?>> getMissingObjects() {
         return missingObjects;
     }
 
-    public <T extends DatabaseObject> Set<T> getMissingObjects(Class<T> type) {
-        Set returnSet = new HashSet();
-        for (DatabaseObject obj : missingObjects) {
+    public Set<DatabaseObject<?>> getMissingObjects(Class<? extends DatabaseObject> type) {
+        Set<DatabaseObject<?>> returnSet = new HashSet<>();
+        for (DatabaseObject<?> obj : missingObjects) {
             if (type.isAssignableFrom(obj.getClass())) {
                 returnSet.add(obj);
             }
@@ -78,16 +78,16 @@ public class DiffResult {
         return returnSet;
     }
 
-    public <T extends DatabaseObject> SortedSet<T> getMissingObjects(Class<T> type, Comparator<DatabaseObject> comparator) {
-        TreeSet<T> set = new TreeSet<>(comparator);
+    public SortedSet<DatabaseObject<?>> getMissingObjects(Class<? extends DatabaseObject> type, Comparator<DatabaseObject<?>> comparator) {
+        TreeSet<DatabaseObject<?>> set = new TreeSet<>(comparator);
         set.addAll(getMissingObjects(type));
         return set;
     }
 
-    public <T extends DatabaseObject> T getMissingObject(T example, CompareControl.SchemaComparison[] schemaComparisons) {
+    public DatabaseObject<?> getMissingObject(DatabaseObject<?> example, CompareControl.SchemaComparison[] schemaComparisons) {
         Database accordingTo = getComparisonSnapshot().getDatabase();
         DatabaseObjectComparatorFactory comparator = DatabaseObjectComparatorFactory.getInstance();
-        for (T obj : (Set<T>) getMissingObjects(example.getClass())) {
+        for (DatabaseObject<?> obj : getMissingObjects((Class<DatabaseObject>) example.getClass())) {
             if (comparator.isSameObject(obj, example, schemaComparisons, accordingTo)) {
                 return obj;
             }
@@ -95,20 +95,20 @@ public class DiffResult {
         return null;
     }
 
-    public void addMissingObject(DatabaseObject obj) {
+    public void addMissingObject(DatabaseObject<?> obj) {
         if ((obj instanceof Column) && (BooleanUtil.isTrue(((Column) obj).getComputed()) || BooleanUtil.isTrue(((Column) obj).getDescending()))) {
             return; //not really missing, it's a virtual column
         }
         missingObjects.add(obj);
     }
 
-    public Set<? extends DatabaseObject> getUnexpectedObjects() {
+    public Set<DatabaseObject<?>> getUnexpectedObjects() {
         return unexpectedObjects;
     }
 
-    public <T extends DatabaseObject> Set<T> getUnexpectedObjects(Class<T> type) {
-        Set returnSet = new HashSet();
-        for (DatabaseObject obj : unexpectedObjects) {
+    public Set<DatabaseObject<?>> getUnexpectedObjects(Class<? extends DatabaseObject> type) {
+        Set<DatabaseObject<?>> returnSet = new HashSet<>();
+        for (DatabaseObject<?> obj : unexpectedObjects) {
             if (type.isAssignableFrom(obj.getClass())) {
                 returnSet.add(obj);
             }
@@ -116,16 +116,16 @@ public class DiffResult {
         return returnSet;
     }
 
-    public <T extends DatabaseObject> SortedSet<T> getUnexpectedObjects(Class<T> type, Comparator<DatabaseObject> comparator) {
-        TreeSet<T> set = new TreeSet<>(comparator);
+    public SortedSet<DatabaseObject<?>> getUnexpectedObjects(Class<? extends DatabaseObject> type, Comparator<DatabaseObject<?>> comparator) {
+        TreeSet<DatabaseObject<?>> set = new TreeSet<>(comparator);
         set.addAll(getUnexpectedObjects(type));
         return set;
     }
 
-    public <T extends DatabaseObject> T getUnexpectedObject(T example, CompareControl.SchemaComparison[] schemaComparisons) {
+    public DatabaseObject<?> getUnexpectedObject(DatabaseObject example, CompareControl.SchemaComparison[] schemaComparisons) {
         Database accordingTo = this.getComparisonSnapshot().getDatabase();
         DatabaseObjectComparatorFactory comparator = DatabaseObjectComparatorFactory.getInstance();
-        for (T obj : (Set<T>) getUnexpectedObjects(example.getClass())) {
+        for (DatabaseObject<?> obj : getUnexpectedObjects((Class<DatabaseObject>) example.getClass())) {
             if (comparator.isSameObject(obj, example, schemaComparisons, accordingTo)) {
                 return obj;
             }
@@ -133,17 +133,17 @@ public class DiffResult {
         return null;
     }
 
-    public void addUnexpectedObject(DatabaseObject obj) {
+    public void addUnexpectedObject(DatabaseObject<?> obj) {
         unexpectedObjects.add(obj);
     }
 
-    public Map<DatabaseObject, ObjectDifferences> getChangedObjects() {
+    public Map<DatabaseObject<?>, ObjectDifferences> getChangedObjects() {
         return changedObjects;
     }
 
-    public <T extends DatabaseObject> Map<T, ObjectDifferences> getChangedObjects(Class<T> type) {
-        Map returnSet = new HashMap();
-        for (Map.Entry<DatabaseObject, ObjectDifferences> obj : changedObjects.entrySet()) {
+    public Map<DatabaseObject<?>, ObjectDifferences> getChangedObjects(Class<? extends DatabaseObject> type) {
+        Map<DatabaseObject<?>,ObjectDifferences> returnSet = new HashMap<>();
+        for (Map.Entry<DatabaseObject<?>, ObjectDifferences> obj : changedObjects.entrySet()) {
             if (type.isAssignableFrom(obj.getKey().getClass())) {
                 returnSet.put(obj.getKey(), obj.getValue());
             }
@@ -151,16 +151,16 @@ public class DiffResult {
         return returnSet;
     }
 
-    public <T extends DatabaseObject> SortedMap<T, ObjectDifferences> getChangedObjects(Class<T> type, Comparator<DatabaseObject> comparator) {
-        SortedMap<T, ObjectDifferences> map = new TreeMap<>(comparator);
+    public SortedMap<DatabaseObject<?>, ObjectDifferences> getChangedObjects(Class<? extends DatabaseObject> type, Comparator<DatabaseObject<?>> comparator) {
+        SortedMap<DatabaseObject<?>, ObjectDifferences> map = new TreeMap<>(comparator);
         map.putAll(getChangedObjects(type));
         return map;
     }
 
-    public ObjectDifferences getChangedObject(DatabaseObject example, CompareControl.SchemaComparison[] schemaComparisons) {
+    public ObjectDifferences getChangedObject(DatabaseObject<?> example, CompareControl.SchemaComparison[] schemaComparisons) {
         Database accordingTo = this.getComparisonSnapshot().getDatabase();
         DatabaseObjectComparatorFactory comparator = DatabaseObjectComparatorFactory.getInstance();
-        for (Map.Entry<? extends DatabaseObject, ObjectDifferences> entry : getChangedObjects(example.getClass()).entrySet()) {
+        for (Map.Entry<DatabaseObject<?>, ObjectDifferences> entry : getChangedObjects(example.getClass()).entrySet()) {
             if (comparator.isSameObject(entry.getKey(), example, schemaComparisons, accordingTo)) {
                 return entry.getValue();
             }
@@ -169,7 +169,7 @@ public class DiffResult {
     }
 
 
-    public void addChangedObject(DatabaseObject obj, ObjectDifferences differences) {
+    public void addChangedObject(DatabaseObject<?> obj, ObjectDifferences differences) {
         if ((obj instanceof Catalog) || (obj instanceof Schema)) {
             if ((differences.getSchemaComparisons() != null) && (differences.getDifferences().size() == 1) &&
                 (differences.getDifference("name") != null)) {

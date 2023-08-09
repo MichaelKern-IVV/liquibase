@@ -44,7 +44,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
             ")";
 
     @Override
-    protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
+    protected void addTo(DatabaseObject<?> foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
         if (!(foundObject instanceof Schema) || !snapshot.getDatabase().supportsSequences()) {
             return;
         }
@@ -62,7 +62,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
     }
 
     @Override
-    protected DatabaseObject snapshotObject(DatabaseObject example, DatabaseSnapshot snapshot) throws DatabaseException {
+    protected DatabaseObject snapshotObject(DatabaseObject<?> example, DatabaseSnapshot snapshot) throws DatabaseException {
         if (example.getSnapshotId() != null) {
             return example;
         }

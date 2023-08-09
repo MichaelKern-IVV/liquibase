@@ -31,7 +31,7 @@ public class ViewSnapshotGenerator extends JdbcSnapshotGenerator {
 
 
     @Override
-    protected DatabaseObject snapshotObject(DatabaseObject example, DatabaseSnapshot snapshot) throws DatabaseException {
+    protected DatabaseObject snapshotObject(DatabaseObject<?> example, DatabaseSnapshot snapshot) throws DatabaseException {
         if (((View) example).getDefinition() != null) {
             return example;
         }
@@ -122,7 +122,7 @@ public class ViewSnapshotGenerator extends JdbcSnapshotGenerator {
     }
 
     @Override
-    protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
+    protected void addTo(DatabaseObject<?> foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
         if (!snapshot.getSnapshotControl().shouldInclude(View.class)) {
             return;
         }

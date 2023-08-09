@@ -35,7 +35,7 @@ public class UnexpectedViewChangeGenerator extends AbstractChangeGenerator imple
     }
 
     @Override
-    public Change[] fixUnexpected(DatabaseObject unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixUnexpected(DatabaseObject<?> unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
         View view = (View) unexpectedObject;
 
         DropViewChange change = new DropViewChange();
@@ -51,9 +51,6 @@ public class UnexpectedViewChangeGenerator extends AbstractChangeGenerator imple
             control.setAlreadyHandledUnexpected(column);
         }
 
-
         return new Change[]{change};
-
-
     }
 }

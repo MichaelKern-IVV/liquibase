@@ -6,9 +6,9 @@ import liquibase.structure.AbstractDatabaseObject;
 import liquibase.structure.DatabaseObject;
 import liquibase.util.StringUtil;
 
-public abstract class StoredDatabaseLogic<T extends StoredDatabaseLogic> extends AbstractDatabaseObject {
+public abstract class StoredDatabaseLogic<T extends StoredDatabaseLogic<T>> extends AbstractDatabaseObject<T> {
     @Override
-    public DatabaseObject[] getContainingObjects() {
+    public DatabaseObject<?>[] getContainingObjects() {
         return new DatabaseObject[]{
                 getSchema()
         };

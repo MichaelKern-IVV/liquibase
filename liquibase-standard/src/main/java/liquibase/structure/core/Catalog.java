@@ -6,7 +6,7 @@ import liquibase.structure.DatabaseObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Catalog extends AbstractDatabaseObject {
+public class Catalog extends AbstractDatabaseObject<Catalog> {
 
     public Catalog() {
         setAttribute("objects",  new ConcurrentHashMap<Class<? extends DatabaseObject>, Set<DatabaseObject>>());
@@ -86,8 +86,6 @@ public class Catalog extends AbstractDatabaseObject {
 
         return (getName() != null) ? getName().equalsIgnoreCase(catalog.getName()) : (catalog.getName() == null);
     }
-
-
 
     @Override
     public int hashCode() {

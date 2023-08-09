@@ -35,7 +35,7 @@ public class UnexpectedForeignKeyChangeGenerator extends AbstractChangeGenerator
     }
 
     @Override
-    public Change[] fixUnexpected(DatabaseObject unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
+    public Change[] fixUnexpected(DatabaseObject<?> unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisonDatabase, ChangeGeneratorChain chain) {
         ForeignKey fk = (ForeignKey) unexpectedObject;
 
         DropForeignKeyConstraintChange change = new DropForeignKeyConstraintChange();
@@ -60,6 +60,5 @@ public class UnexpectedForeignKeyChangeGenerator extends AbstractChangeGenerator
 //        }
 
         return new Change[] { change };
-
     }
 }

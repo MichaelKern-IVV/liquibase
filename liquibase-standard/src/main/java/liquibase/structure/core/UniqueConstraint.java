@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class UniqueConstraint extends AbstractDatabaseObject {
+public class UniqueConstraint extends AbstractDatabaseObject<UniqueConstraint> {
 
     public UniqueConstraint() {
         setAttribute("columns", new ArrayList<>());
@@ -212,22 +212,21 @@ public class UniqueConstraint extends AbstractDatabaseObject {
 	}
 
 	@Override
-    public int compareTo(Object other) {
-        UniqueConstraint o = (UniqueConstraint) other;
+    public int compareTo(UniqueConstraint that) {
 		// Need check for nulls here due to NullPointerException using Postgres
 		int returnValue = 0;
-		if (getTable() != null && o.getTable() != null) {
-			returnValue = getTable().compareTo(o.getTable());
+		if (getTable() != null && that.getTable() != null) {
+			returnValue = getTable().compareTo(that.getTable());
 		} else if (getTable() != null) {
 			return 1;
-		} else if (o.getTable() != null) {
+		} else if (that.getTable() != null) {
 			return -1;
 		}
 		if (returnValue == 0) {
-			returnValue = this.getName().compareTo(o.getName());
+			returnValue = this.getName().compareTo(that.getName());
 		}
 		if (returnValue == 0) {
-			returnValue = this.getColumnNames().compareTo(o.getColumnNames());
+			returnValue = this.getColumnNames().compareTo(that.getColumnNames());
 		}
 		return returnValue;
 	}

@@ -95,7 +95,7 @@ public class SnapshotGeneratorFactory {
      * @throws DatabaseException If a problem occurs in the DBMS-specific code
      * @throws InvalidExampleException If the object cannot be checked properly, e.g. if the object name is ambiguous
      */
-    public boolean has(DatabaseObject example, Database database) throws DatabaseException, InvalidExampleException {
+    public boolean has(DatabaseObject<?> example, Database database) throws DatabaseException, InvalidExampleException {
         // @todo I have seen duplicates in types - maybe convert the List into a Set? Need to understand it more thoroughly.
         List<Class<? extends DatabaseObject>> types = new ArrayList<>(getContainerTypes(example.getClass(), database));
         types.add(example.getClass());
@@ -197,7 +197,7 @@ public class SnapshotGeneratorFactory {
      * @throws DatabaseException       if a problem occurs during snapshotting
      * @throws InvalidExampleException if the given catalog/schema combinations are invalid (e.g. duplicates)
      */
-    public DatabaseSnapshot createSnapshot(DatabaseObject[] examples, Database database,
+    public DatabaseSnapshot createSnapshot(DatabaseObject<?>[] examples, Database database,
                                            SnapshotControl snapshotControl)
             throws DatabaseException, InvalidExampleException {
         DatabaseConnection conn = database.getConnection();
@@ -284,7 +284,7 @@ public class SnapshotGeneratorFactory {
 
     public Set<Class<? extends DatabaseObject>> getContainerTypes(Class<? extends DatabaseObject> type,
                                                                   Database database) {
-        Set<Class<? extends DatabaseObject>>  returnSet = new HashSet<>();
+        Set<Class<? extends DatabaseObject>> returnSet = new HashSet<>();
 
         getContainerTypes(type, database, returnSet);
 

@@ -4,12 +4,13 @@ import liquibase.CatalogAndSchema;
 import liquibase.database.Database;
 import liquibase.diff.compare.CompareControl;
 import liquibase.diff.compare.DatabaseObjectComparator;
+import liquibase.structure.DatabaseObject;
 import liquibase.util.StringUtil;
 
 /**
  * DatabaseObjectComparator for Catalog and Schema comparators with common stuff
  */
-public abstract class CommonCatalogSchemaComparator implements DatabaseObjectComparator {
+public abstract class CommonCatalogSchemaComparator<T extends DatabaseObject<T>> implements DatabaseObjectComparator<T> {
     protected boolean equalsSchemas(Database accordingTo, String schemaName1, String schemaName2) {
         if (CatalogAndSchema.CatalogAndSchemaCase.ORIGINAL_CASE.equals(accordingTo.getSchemaAndCatalogCase())){
             return StringUtil.trimToEmpty(schemaName1).equals(StringUtil.trimToEmpty(schemaName2));

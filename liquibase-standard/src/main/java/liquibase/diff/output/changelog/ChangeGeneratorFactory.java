@@ -82,7 +82,7 @@ public class ChangeGeneratorFactory {
         return new ChangeGeneratorChain(generators);
     }
 
-    public Change[] fixMissing(DatabaseObject missingObject, DiffOutputControl control, Database referenceDatabase, Database comparisionDatabase) {
+    public Change[] fixMissing(DatabaseObject<?> missingObject, DiffOutputControl control, Database referenceDatabase, Database comparisionDatabase) {
         if (!control.shouldOutput(missingObject, comparisionDatabase)) {
             return null;
         }
@@ -94,7 +94,7 @@ public class ChangeGeneratorFactory {
         return chain.fixMissing(missingObject, control, referenceDatabase, comparisionDatabase);
     }
 
-    public Change[] fixUnexpected(DatabaseObject unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisionDatabase) {
+    public Change[] fixUnexpected(DatabaseObject<?> unexpectedObject, DiffOutputControl control, Database referenceDatabase, Database comparisionDatabase) {
         if (!control.shouldOutput(unexpectedObject, comparisionDatabase)) {
             return null;
         }
@@ -144,6 +144,4 @@ public class ChangeGeneratorFactory {
         }
         return returnTypes;
     }
-
-
 }

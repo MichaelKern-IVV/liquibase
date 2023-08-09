@@ -5,7 +5,7 @@ import liquibase.structure.DatabaseObject;
 
 import java.math.BigInteger;
 
-public class Sequence extends AbstractDatabaseObject {
+public class Sequence extends AbstractDatabaseObject<Sequence> {
 
     public Sequence() {
     }

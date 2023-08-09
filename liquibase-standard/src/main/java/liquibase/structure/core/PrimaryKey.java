@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PrimaryKey extends AbstractDatabaseObject {
+public class PrimaryKey extends AbstractDatabaseObject<PrimaryKey> {
 
     public PrimaryKey() {
         setAttribute("columns", new ArrayList<>());
@@ -103,11 +103,10 @@ public class PrimaryKey extends AbstractDatabaseObject {
 
 
     @Override
-    public int compareTo(Object other) {
-        PrimaryKey o = (PrimaryKey) other;
-        int returnValue = this.getTable().compareTo(o.getTable());
+    public int compareTo(PrimaryKey that) {
+        int returnValue = this.getTable().compareTo(that.getTable());
         if (returnValue == 0) {
-            returnValue = this.getColumnNames().compareTo(o.getColumnNames());
+            returnValue = this.getColumnNames().compareTo(that.getColumnNames());
         }
 
         return returnValue;

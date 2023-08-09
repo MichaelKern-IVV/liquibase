@@ -50,7 +50,7 @@ public class DatabaseUtils {
 
                     if (StringUtil.isNotEmpty(searchPath)) {
                         //If existing search path entries are not quoted, quote them. Some databases do not show them as quoted even though they need to be (like $user or case sensitive schemas)
-                        finalSearchPath += ", " + StringUtil.join(StringUtil.splitAndTrim(searchPath, ","), ",", (StringUtil.StringUtilFormatter<String>) obj -> {
+                        finalSearchPath += ", " + StringUtil.join(StringUtil.splitAndTrim(searchPath, ","), ",", obj -> {
                             if (obj.startsWith("\"")) {
                                 return obj;
                             }
