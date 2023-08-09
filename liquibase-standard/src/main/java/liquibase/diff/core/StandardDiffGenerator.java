@@ -70,7 +70,7 @@ public class StandardDiffGenerator implements DiffGenerator {
 
     }
 
-    protected <T extends DatabaseObject> void compareObjectType(Class<T> type, DatabaseSnapshot referenceSnapshot, DatabaseSnapshot comparisonSnapshot, DiffResult diffResult) {
+    protected <T extends DatabaseObject<T>> void compareObjectType(Class<T> type, DatabaseSnapshot referenceSnapshot, DatabaseSnapshot comparisonSnapshot, DiffResult diffResult) {
 
         Database comparisonDatabase = comparisonSnapshot.getDatabase();
         Database referenceDatabase = referenceSnapshot.getDatabase();

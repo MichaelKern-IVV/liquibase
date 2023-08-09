@@ -28,7 +28,7 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
     }
 
     @Override
-    public boolean isSameObject(Schema thisSchema, Schema otherSchema, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public boolean isSameObject(Schema thisSchema, Schema otherSchema, Database accordingTo, DatabaseObjectComparatorChain<Schema> chain) {
 
         String schemaName1 = null;
         String schemaName2 = null;
@@ -119,9 +119,9 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
     }
 
     @Override
-    public ObjectDifferences findDifferences(Schema thisSchema, Schema otherSchema, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Schema thisSchema, Schema otherSchema, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Schema> chain, Set<String> exclude) {
         ObjectDifferences differences = new ObjectDifferences(compareControl);
-        differences.compare("name", thisSchema, otherSchema, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
+        differences.compare("name", thisSchema, otherSchema, new ObjectDifferences.DatabaseObjectNameCompareFunction<>(Schema.class, accordingTo));
 
         return differences;
     }

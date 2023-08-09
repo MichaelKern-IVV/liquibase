@@ -94,7 +94,7 @@ public class UniqueConstraintComparator implements DatabaseObjectComparator<Uniq
     }
 
     @Override
-    public ObjectDifferences findDifferences(UniqueConstraint databaseObject1, UniqueConstraint databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(UniqueConstraint databaseObject1, UniqueConstraint databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<UniqueConstraint> chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("columns");
         exclude.add("backingIndex");

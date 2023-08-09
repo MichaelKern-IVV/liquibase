@@ -7,14 +7,14 @@ import liquibase.util.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Table extends Relation {
+public class Table extends Relation<Table> {
 
 
     public Table() {
         setAttribute("outgoingForeignKeys", new ArrayList<ForeignKey>());
         setAttribute("indexes", new ArrayList<Index>());
         setAttribute("uniqueConstraints", new ArrayList<UniqueConstraint>());
-        setAttribute("notNullConstraints", new ArrayList<UniqueConstraint>());
+        setAttribute("notNullConstraints", new ArrayList<NotNullConstraint>());
     }
 
     public Table(String catalogName, String schemaName, String tableName) {

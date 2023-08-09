@@ -28,11 +28,9 @@ public class SnapshotGeneratorFactory {
             for (SnapshotGenerator generator : Scope.getCurrentScope().getServiceLocator().findInstances(SnapshotGenerator.class)) {
                 register(generator);
             }
-
         } catch (Exception e) {
             throw new UnexpectedLiquibaseException(e);
         }
-
     }
 
     /**
@@ -95,7 +93,7 @@ public class SnapshotGeneratorFactory {
      * @throws DatabaseException If a problem occurs in the DBMS-specific code
      * @throws InvalidExampleException If the object cannot be checked properly, e.g. if the object name is ambiguous
      */
-    public boolean has(DatabaseObject<?> example, Database database) throws DatabaseException, InvalidExampleException {
+    public boolean has(DatabaseObject example, Database database) throws DatabaseException, InvalidExampleException {
         // @todo I have seen duplicates in types - maybe convert the List into a Set? Need to understand it more thoroughly.
         List<Class<? extends DatabaseObject>> types = new ArrayList<>(getContainerTypes(example.getClass(), database));
         types.add(example.getClass());
@@ -126,7 +124,7 @@ public class SnapshotGeneratorFactory {
           * snapshot. If that works, we count that as confirmation of existence.
           */
 
-        SnapshotControl snapshotControl = (new SnapshotControl(database, false, types.toArray(new Class[0])));
+        SnapshotControl snapshotControl = new SnapshotControl(database, false);
         snapshotControl.setWarnIfObjectNotFound(false);
 
         if (createSnapshot(example, database,snapshotControl) != null) {
@@ -142,7 +140,7 @@ public class SnapshotGeneratorFactory {
             new SnapshotControl(database, false, example.getClass()).setWarnIfObjectNotFound(false)
         );
 
-        for (DatabaseObject obj : snapshot.get(example.getClass())) {
+        for (DatabaseObject<?> obj : snapshot.get(example.getClass())) {
             if (DatabaseObjectComparatorFactory.getInstance().isSameObject(example, obj, null, database)) {
                 return true;
             }
@@ -223,7 +221,7 @@ public class SnapshotGeneratorFactory {
      * @throws DatabaseException if a problem occurs during snapshotting
      * @throws InvalidExampleException if the given catalog/schema combinations are invalid (e.g. duplicates)
      */
-    public <T extends DatabaseObject> T createSnapshot(T example, Database database) throws DatabaseException, InvalidExampleException {
+    public <T extends DatabaseObject<T>> T createSnapshot(T example, Database database) throws DatabaseException, InvalidExampleException {
         return createSnapshot(example, database, new SnapshotControl(database));
     }
 
@@ -238,7 +236,7 @@ public class SnapshotGeneratorFactory {
      * @throws DatabaseException if a problem occurs during snapshotting
      * @throws InvalidExampleException if the given catalog/schema combinations are invalid (e.g. duplicates)
      */
-    public <T extends DatabaseObject> T createSnapshot(T example, Database database, SnapshotControl snapshotControl)
+    public <T extends DatabaseObject<T>> T createSnapshot(T example, Database database, SnapshotControl snapshotControl)
             throws DatabaseException, InvalidExampleException {
         DatabaseSnapshot snapshot = createSnapshot(new DatabaseObject[]{example}, database, snapshotControl);
         return snapshot.get(example);

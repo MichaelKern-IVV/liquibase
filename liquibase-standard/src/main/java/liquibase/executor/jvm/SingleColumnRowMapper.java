@@ -190,7 +190,7 @@ class SingleColumnRowMapper<T> implements RowMapper<T> {
                 return ObjectUtil.convert(value, requiredType);
             } else {
                 // Convert stringified value to target Number class.
-                return (T) NumberUtil.parseNumber(value.toString(), requiredType);
+                return (T) NumberUtil.parseNumber(value.toString(), (Class<Number>) requiredType);
             }
         } else {
             throw new IllegalArgumentException(

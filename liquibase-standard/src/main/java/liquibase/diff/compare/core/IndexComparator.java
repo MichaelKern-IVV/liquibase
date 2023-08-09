@@ -98,7 +98,7 @@ public class IndexComparator implements DatabaseObjectComparator<Index> {
 
 
     @Override
-    public ObjectDifferences findDifferences(Index thisIndex, Index thatIndex, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Index thisIndex, Index thatIndex, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Index> chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("columns");
         ObjectDifferences differences = chain.findDifferences(thisIndex, thatIndex, accordingTo, compareControl, exclude);

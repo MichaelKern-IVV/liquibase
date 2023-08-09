@@ -15,9 +15,9 @@ public interface DatabaseObjectComparator<T extends DatabaseObject<T>> {
 
     int getPriority(Class<? extends DatabaseObject> objectType, Database database);
 
-    boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain);
+    boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain<T> chain);
 
-    String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain);
+    String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain<T> chain);
 
-    ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude);
+    ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<T> chain, Set<String> exclude);
 }

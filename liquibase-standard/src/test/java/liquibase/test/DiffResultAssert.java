@@ -35,16 +35,16 @@ public class DiffResultAssert {
         return checkContainsMissingObject(ForeignKey.class, foreignKey -> foreignKey.getName().equalsIgnoreCase(fkName), "Foreign key with name "+fkName+" not found");
     }
 
-    public <T extends DatabaseObject> DiffResultAssert containsMissingObject(Class<T> type, Predicate<T> condition) {
+    public DiffResultAssert containsMissingObject(Class<? extends DatabaseObject> type, Predicate<DatabaseObject<?>> condition) {
         return checkContainsMissingObject(type, condition, type.getSimpleName() + " satisfying condition not found");
     }
 
-    public DiffResultAssert containsMissingObject(DatabaseObject object) {
+    public DiffResultAssert containsMissingObject(DatabaseObject<?> object) {
         return checkContainsMissingObject(object.getClass(), object::equals, object + " not found");
     }
 
-    private <T extends DatabaseObject> DiffResultAssert checkContainsMissingObject(Class<T> type, Predicate<T> condition, String failMessage) {
-        Optional<? extends DatabaseObject> first = diff.getMissingObjects(type).stream()
+    private DiffResultAssert checkContainsMissingObject(Class<? extends DatabaseObject> type, Predicate<DatabaseObject<?>> condition, String failMessage) {
+        Optional<DatabaseObject<?>> first = diff.getMissingObjects(type).stream()
             .filter(condition)
             .findFirst();
         if (!first.isPresent()) {

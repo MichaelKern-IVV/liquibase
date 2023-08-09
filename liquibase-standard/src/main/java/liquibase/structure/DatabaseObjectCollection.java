@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DatabaseObjectCollection implements LiquibaseSerializable {
 
-    private final Map<Class<? extends DatabaseObject>, Map<String, Set<DatabaseObject>>> cache = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<Class<? extends DatabaseObject>, Map<String, Set<DatabaseObject<?>>>> cache = Collections.synchronizedMap(new LinkedHashMap<>());
     private final Database database;
 
     public DatabaseObjectCollection(Database database) {
@@ -50,13 +50,13 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
 
     @Override
     public Object getSerializableFieldValue(String field) {
-        SortedSet<DatabaseObject> objects = new TreeSet<>(new DatabaseObjectCollectionComparator());
+        SortedSet<DatabaseObject<?>> objects = new TreeSet<>(new DatabaseObjectCollectionComparator());
         try {
-            Map<String, Set<DatabaseObject>> map = cache.get(Class.forName(field));
+            Map<String, Set<DatabaseObject<?>>> map = cache.get(Class.forName(field));
             if (map == null) {
                 return null;
             }
-            for (Set<DatabaseObject> set : map.values()) {
+            for (Set<DatabaseObject<?>> set : map.values()) {
                 objects.addAll(set);
             }
             return objects;
@@ -74,12 +74,12 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
         if (databaseObject == null) {
             return;
         }
-        Map<String, Set<DatabaseObject>> collectionMap = cache.computeIfAbsent(databaseObject.getClass(), k -> new ConcurrentHashMap<>());
+        Map<String, Set<DatabaseObject<?>>> collectionMap = cache.computeIfAbsent(databaseObject.getClass(), k -> new ConcurrentHashMap<>());
 
         String[] hashes = DatabaseObjectComparatorFactory.getInstance().hash(databaseObject, null, database);
 
         for (String hash : hashes) {
-            Set<DatabaseObject> collection = collectionMap.computeIfAbsent(hash, k -> new HashSet<>());
+            Set<DatabaseObject<?>> collection = collectionMap.computeIfAbsent(hash, k -> new HashSet<>());
             collection.add(databaseObject);
         }
     }
@@ -88,7 +88,7 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
      * Returns the object described by the passed example if it is already included in this snapshot.
      */
     public <DatabaseObjectType extends DatabaseObject> DatabaseObjectType get(DatabaseObjectType example, CompareControl.SchemaComparison[] schemaComparisons) {
-        Map<String, Set<DatabaseObject>> databaseObjectsByHash = cache.get(example.getClass());
+        Map<String, Set<DatabaseObject<?>>> databaseObjectsByHash = cache.get(example.getClass());
 
         if (databaseObjectsByHash == null) {
             return null;
@@ -96,7 +96,7 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
 
         String[] hashes = DatabaseObjectComparatorFactory.getInstance().hash(example, null, database);
 
-        SortedSet<Set<DatabaseObject>> objectSets = new TreeSet<>((o1, o2) -> {
+        SortedSet<Set<DatabaseObject<?>>> objectSets = new TreeSet<>((o1, o2) -> {
             int sizeComparison = Integer.compare(o1.size(), o2.size());
             if (sizeComparison == 0) {
                 return o1.toString().compareTo(o2.toString());
@@ -105,14 +105,14 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
         });
 
         for (String hash : hashes) {
-            Set<DatabaseObject> databaseObjects = databaseObjectsByHash.get(hash);
+            Set<DatabaseObject<?>> databaseObjects = databaseObjectsByHash.get(hash);
             if (databaseObjects != null) {
                 objectSets.add(databaseObjects);
             }
         }
 
-        for (Set<DatabaseObject> databaseObjects : objectSets) {
-            for (DatabaseObject obj : databaseObjects) {
+        for (Set<DatabaseObject<?>> databaseObjects : objectSets) {
+            for (DatabaseObject<?> obj : databaseObjects) {
                 if (DatabaseObjectComparatorFactory.getInstance().isSameObject(obj, example, schemaComparisons, database)) {
                     //noinspection unchecked
                     return (DatabaseObjectType) obj;
@@ -126,22 +126,21 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
     /**
      * Returns all objects of the given type that are already included in this snapshot.
      */
-    public <DatabaseObjectType extends DatabaseObject> Set<DatabaseObjectType> get(Class<DatabaseObjectType> type) {
+    public Set<DatabaseObject<?>> get(Class<? extends DatabaseObject> type) {
 
-        Set<DatabaseObject> returnSet = new HashSet<>();
+        Set<DatabaseObject<?>> returnSet = new HashSet<>();
 
-        Map<String, Set<DatabaseObject>> allFound = cache.get(type);
+        Map<String, Set<DatabaseObject<?>>> allFound = cache.get(type);
         if (allFound != null) {
-            for (Set<DatabaseObject> objects : allFound.values()) {
+            for (Set<DatabaseObject<?>> objects : allFound.values()) {
                 returnSet.addAll(objects);
             }
         }
 
-        return (Set<DatabaseObjectType>) Collections.unmodifiableSet(returnSet);
+        return Collections.unmodifiableSet(returnSet);
     }
 
-
-    public boolean contains(DatabaseObject wantedObject, CompareControl.SchemaComparison[] schemaComparisons) {
+    public boolean contains(DatabaseObject<?> wantedObject, CompareControl.SchemaComparison[] schemaComparisons) {
         return get(wantedObject, schemaComparisons) != null;
     }
 
@@ -155,8 +154,8 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
         throw new RuntimeException("TODO");
     }
 
-    public Map<Class<? extends DatabaseObject>, Set<? extends DatabaseObject>> toMap() {
-        Map<Class<? extends DatabaseObject>, Set<? extends DatabaseObject>> returnMap =
+    public Map<Class<? extends DatabaseObject>, Set<DatabaseObject<?>>> toMap() {
+        Map<Class<? extends DatabaseObject>, Set<DatabaseObject<?>>> returnMap =
             Collections.synchronizedMap(new LinkedHashMap<>());
         for (Class<? extends DatabaseObject> type : this.cache.keySet()) {
             returnMap.put(type, get(type));
@@ -164,5 +163,4 @@ public class DatabaseObjectCollection implements LiquibaseSerializable {
 
         return returnMap;
     }
-
 }

@@ -10,25 +10,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MockSnapshotGeneratorFactory extends SnapshotGeneratorFactory{
-    private List<DatabaseObject> objects;
+    private List<DatabaseObject<?>> objects;
 
-    public MockSnapshotGeneratorFactory(DatabaseObject... objects) {
+    public MockSnapshotGeneratorFactory(DatabaseObject<?>... objects) {
         this.objects = new ArrayList<>();
         addObjects(objects);
     }
 
     @Override
-    public DatabaseSnapshot createSnapshot(DatabaseObject[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
+    public DatabaseSnapshot createSnapshot(DatabaseObject<?>[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
         return new MockDatabaseSnapshot(objects, examples, database, snapshotControl);
     }
 
-    public void addObjects(DatabaseObject... objects) {
+    public void addObjects(DatabaseObject<?>... objects) {
         if (objects != null) {
-            for (DatabaseObject object : objects) {
+            for (DatabaseObject<?> object : objects) {
                 this.objects.add(object);
 
                 if (object instanceof Relation) {
-                    for (Column column : ((Relation) object).getColumns()) {
+                    for (Column column : ((Relation<?>) object).getColumns()) {
                         this.objects.add(column);
                     }
                     this.objects.add(object.getSchema());
@@ -37,18 +37,15 @@ public class MockSnapshotGeneratorFactory extends SnapshotGeneratorFactory{
         }
     }
 
-    public void removeObjects(DatabaseObject... objects) {
-        for (DatabaseObject object : objects) {
+    public void removeObjects(DatabaseObject<?>... objects) {
+        for (DatabaseObject<?> object : objects) {
             this.objects.remove(object);
 
             if (object instanceof Relation) {
-                for (Column column : ((Relation) object).getColumns()) {
+                for (Column column : ((Relation<?>) object).getColumns()) {
                     this.objects.remove(column);
                 }
             }
         }
-
     }
-
-
 }

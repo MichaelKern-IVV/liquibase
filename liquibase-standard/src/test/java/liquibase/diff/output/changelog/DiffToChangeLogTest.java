@@ -31,7 +31,7 @@ public class DiffToChangeLogTest {
     @Test
     public void getOrderedOutputTypes_hasDependencies() throws Exception {
         MySQLDatabase database = new MySQLDatabase();
-        Class<? extends DatabaseObject>[] typesArray = new Class[5];
+        Class<? extends DatabaseObject<?>>[] typesArray = new Class[5];
         typesArray[0] = Schema.class;
         typesArray[1] = View.class;
         typesArray[2] = Catalog.class;

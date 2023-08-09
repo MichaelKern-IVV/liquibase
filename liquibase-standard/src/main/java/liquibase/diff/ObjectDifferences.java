@@ -46,16 +46,17 @@ public class ObjectDifferences {
         return !differences.isEmpty();
     }
 
-    public void compare(String attribute, DatabaseObject<?> referenceObject, DatabaseObject<?> compareToObject, CompareFunction compareFunction) {
+    public <T extends DatabaseObject<T>> void compare(String attribute, T referenceObject, T compareToObject, CompareFunction<T> compareFunction) {
         compare(null, attribute, referenceObject, compareToObject, compareFunction);
     }
-    public void compare(String message, String attribute, DatabaseObject<?> referenceObject, DatabaseObject<?> compareToObject, CompareFunction compareFunction) {
+
+    public <T extends DatabaseObject<T>> void compare(String message, String attribute, T referenceObject, T compareToObject, CompareFunction<T> compareFunction) {
         if (compareControl.isSuppressedField(referenceObject.getClass(), attribute)) {
             return;
         }
 
-        Object referenceValue = referenceObject.getAttribute(attribute, Object.class);
-        Object compareValue = compareToObject.getAttribute(attribute, Object.class);
+        T referenceValue = (T) referenceObject.getAttribute(attribute, referenceObject.getClass());
+        T compareValue =  (T) compareToObject.getAttribute(attribute, compareToObject.getClass());
 
         referenceValue = undoCollection(referenceValue, compareValue);
         compareValue = undoCollection(compareValue, referenceValue);
@@ -81,17 +82,16 @@ public class ObjectDifferences {
      * Check the passed potentialCollection and if it is a single-entry collection of the same type as the otherObject, return just the collection element.
      * Otherwise, return the original collection.
      */
-    protected Object undoCollection(Object potentialCollection, Object otherObject) {
+    protected <T extends DatabaseObject<T>> T undoCollection(T potentialCollection, T otherObject) {
         if ((otherObject != null) && (potentialCollection instanceof Collection) &&
                 !(otherObject instanceof Collection)) {
             if ((((Collection<?>) potentialCollection).size() == 1) && ((Collection) potentialCollection).iterator()
                 .next().getClass().equals(otherObject.getClass())) {
-                potentialCollection = ((Collection) potentialCollection).iterator().next();
+                potentialCollection = (T) ((Collection) potentialCollection).iterator().next();
             }
         }
         return potentialCollection;
     }
-
 
     public boolean removeDifference(String attribute) {
         return differences.remove(attribute) != null;
@@ -101,11 +101,11 @@ public class ObjectDifferences {
         return compareControl.getSchemaComparisons();
     }
 
-    public interface CompareFunction {
-        boolean areEqual(Object referenceValue, Object compareToValue);
+    public interface CompareFunction<T> {
+        boolean areEqual(T referenceValue, T compareToValue);
     }
 
-    public static class StandardCompareFunction implements CompareFunction {
+    public static class StandardCompareFunction<T extends DatabaseObject<T>> implements CompareFunction<T> {
 
         private final CompareControl.SchemaComparison[] schemaComparisons;
         private final Database accordingTo;
@@ -116,7 +116,7 @@ public class ObjectDifferences {
         }
 
         @Override
-        public boolean areEqual(Object referenceValue, Object compareToValue) {
+        public boolean areEqual(T referenceValue, T compareToValue) {
             if ((referenceValue == null) && (compareToValue == null)) {
                 return true;
             }
@@ -127,14 +127,9 @@ public class ObjectDifferences {
             if ((referenceValue instanceof DatabaseObject) && (compareToValue instanceof DatabaseObject)) {
                 return DatabaseObjectComparatorFactory.getInstance().isSameObject((DatabaseObject) referenceValue, (DatabaseObject) compareToValue, schemaComparisons, accordingTo);
             } else {
-                if ((referenceValue instanceof Number) && (compareToValue instanceof Number)
-                        && !referenceValue.getClass().equals(compareToValue.getClass())) { //standardize on a common number type
-                    referenceValue = new BigDecimal(referenceValue.toString());
-                    compareToValue = new BigDecimal(compareToValue.toString());
-                }
                 if ((referenceValue instanceof Number) && (referenceValue instanceof Comparable)) {
-                    return (compareToValue instanceof Number) && (((Comparable) referenceValue).compareTo
-                        (compareToValue) == 0);
+                    return (compareToValue instanceof Number)
+                        && (((Comparable) referenceValue).compareTo(compareToValue) == 0);
                 } else {
                     return referenceValue.equals(compareToValue);
                 }
@@ -271,16 +266,16 @@ public class ObjectDifferences {
         }
     }
 
-    public static class OrderedCollectionCompareFunction implements CompareFunction {
+    public static class OrderedCollectionCompareFunction<T extends DatabaseObject<T>> implements CompareFunction<Collection<T>> {
 
-        private final StandardCompareFunction compareFunction;
+        private final StandardCompareFunction<T> compareFunction;
 
-        public OrderedCollectionCompareFunction(StandardCompareFunction compareFunction) {
+        public OrderedCollectionCompareFunction(StandardCompareFunction<T> compareFunction) {
             this.compareFunction = compareFunction;
         }
 
         @Override
-        public boolean areEqual(Object referenceValue, Object compareToValue) {
+        public boolean areEqual(Collection<T> referenceValue, Collection<T> compareToValue) {
             if ((referenceValue == null) && (compareToValue == null)) {
                 return true;
             }
@@ -288,24 +283,19 @@ public class ObjectDifferences {
                 return false;
             }
 
-            if (!(referenceValue instanceof Collection) || (!(compareToValue instanceof Collection))) {
-                return false;
-            }
-
             if (((Collection<?>) referenceValue).size() != ((Collection<?>) compareToValue).size()) {
                 return false;
             }
 
-            Iterator referenceIterator = ((Collection) referenceValue).iterator();
-            Iterator compareIterator = ((Collection) compareToValue).iterator();
-
-            if (((Collection<?>) referenceValue).size() != ((Collection<?>) compareToValue).size()) {
+            if (referenceValue.size() != compareToValue.size()) {
                 return false;
             }
 
+            Iterator<T> referenceIterator = referenceValue.iterator();
+            Iterator<T> compareIterator = compareToValue.iterator();
             while (referenceIterator.hasNext()) {
-                Object referenceObj = referenceIterator.next();
-                Object compareObj = compareIterator.next();
+                T referenceObj = referenceIterator.next();
+                T compareObj = compareIterator.next();
 
                 if (!compareFunction.areEqual(referenceObj, compareObj)) {
                     return false;
@@ -317,16 +307,16 @@ public class ObjectDifferences {
     }
 
 
-    public static class UnOrderedCollectionCompareFunction implements CompareFunction {
+    public static class UnOrderedCollectionCompareFunction<T extends DatabaseObject<T>> implements CompareFunction<Collection<T>> {
 
-        private final StandardCompareFunction compareFunction;
+        private final StandardCompareFunction<T> compareFunction;
 
-        public UnOrderedCollectionCompareFunction(StandardCompareFunction compareFunction) {
+        public UnOrderedCollectionCompareFunction(StandardCompareFunction<T> compareFunction) {
             this.compareFunction = compareFunction;
         }
 
         @Override
-        public boolean areEqual(Object referenceValue, Object compareToValue) {
+        public boolean areEqual(Collection<T> referenceValue, Collection<T> compareToValue) {
             if ((referenceValue == null) && (compareToValue == null)) {
                 return true;
             }
@@ -334,18 +324,14 @@ public class ObjectDifferences {
                 return false;
             }
 
-            if (!(referenceValue instanceof Collection) || (!(compareToValue instanceof Collection))) {
+            if (referenceValue.size() != compareToValue.size()) {
                 return false;
             }
 
-            if (((Collection<?>) referenceValue).size() != ((Collection<?>) compareToValue).size()) {
-                return false;
-            }
-
-            for (Object referenceObj : ((Collection) referenceValue)) {
-                Object foundMatch = null;
-                List<Object> unmatchedCompareToValues = new ArrayList<>(((Collection<?>) compareToValue));
-                for (Object compareObj : unmatchedCompareToValues) {
+            for (T referenceObj : referenceValue) {
+                T foundMatch = null;
+                List<T> unmatchedCompareToValues = new ArrayList<>(compareToValue);
+                for (T compareObj : unmatchedCompareToValues) {
                     if (compareFunction.areEqual(referenceObj, compareObj)) {
                         foundMatch = compareObj;
                         break;
@@ -361,5 +347,4 @@ public class ObjectDifferences {
             return true;
         }
     }
-
 }

@@ -49,7 +49,7 @@ public class PrimaryKeyComparator implements DatabaseObjectComparator<PrimaryKey
     }
 
     @Override
-    public ObjectDifferences findDifferences(PrimaryKey thisPrimaryKey, PrimaryKey otherPrimaryKey, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(PrimaryKey thisPrimaryKey, PrimaryKey otherPrimaryKey, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<PrimaryKey> chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("backingIndex");
         exclude.add("columns");

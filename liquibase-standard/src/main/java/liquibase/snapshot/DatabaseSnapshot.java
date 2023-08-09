@@ -39,7 +39,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
     private final Database database;
     private final DatabaseObjectCollection allFound;
     private final DatabaseObjectCollection referencedObjects;
-    private final Map<Class<? extends DatabaseObject>, Set<DatabaseObject>> knownNull = new ConcurrentHashMap<>();
+    private final Map<Class<? extends DatabaseObject>, Set<DatabaseObject<?>>> knownNull = new ConcurrentHashMap<>();
 
     private final Map<String, Object> snapshotScratchPad = new ConcurrentHashMap<>();
 
@@ -127,7 +127,6 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
                 }
                 if (example instanceof Schema) {
                     for (Class<? extends DatabaseObject> type : this.snapshotControl.getTypesToInclude()) {
-
                         for (DatabaseObject<?> object : this.get(type)) {
                             if (object.getSchema() == null) {
                                 if (object instanceof Catalog) {
@@ -175,9 +174,9 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
      */
     public DatabaseSnapshot merge(DatabaseSnapshot snapshotToMerge) {
         DatabaseSnapshot returnSnapshot = this;
-        Map<Class<? extends DatabaseObject>, Set<? extends DatabaseObject>> allFoundMap = snapshotToMerge.allFound.toMap();
-        Map<Class<? extends DatabaseObject>, Set<? extends DatabaseObject>> referencedObjectsMap = snapshotToMerge.referencedObjects.toMap();
-        for (Set<? extends DatabaseObject> setOfDatabaseObject : allFoundMap.values()) {
+        Map<Class<? extends DatabaseObject>, Set<DatabaseObject<?>>> allFoundMap = snapshotToMerge.allFound.toMap();
+        Map<Class<? extends DatabaseObject>, Set<DatabaseObject<?>>> referencedObjectsMap = snapshotToMerge.referencedObjects.toMap();
+        for (Set<DatabaseObject<?>> setOfDatabaseObject : allFoundMap.values()) {
             for (DatabaseObject dbObject : setOfDatabaseObject) {
                 returnSnapshot.allFound.add(dbObject);
             }
@@ -305,7 +304,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
 
         SnapshotListener snapshotListener = snapshotControl.getSnapshotListener();
 
-        SnapshotGeneratorChain chain = createGeneratorChain((Class<? extends DatabaseObject<?>>) example.getClass(), database);
+        SnapshotGeneratorChain chain = createGeneratorChain(example.getClass(), database);
         if (snapshotListener != null) {
             snapshotListener.willSnapshot(example, database);
         }
@@ -313,7 +312,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         T object = chain.snapshot(example, this);
 
         if (object == null) {
-            Set<DatabaseObject> collection = knownNull.computeIfAbsent((Class<? extends DatabaseObject<?>>) example.getClass(), k -> new HashSet<>());
+            Set<DatabaseObject<?>> collection = knownNull.computeIfAbsent(example.getClass(), k -> new HashSet<>());
             collection.add(example);
 
             if (example instanceof Schema) {
@@ -556,17 +555,16 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
     /**
      * Returns the object described by the passed example if it is already included in this snapshot.
      */
-    public <DatabaseObjectType extends DatabaseObject> DatabaseObjectType get(DatabaseObjectType example) {
+    public <T extends DatabaseObject<T>> T get(T example) {
         return allFound.get(example, schemaComparisons);
     }
 
     /**
      * Returns all objects of the given type that are already included in this snapshot.
      */
-    public <DatabaseObjectType extends DatabaseObject> Set<DatabaseObjectType> get(Class<DatabaseObjectType> type) {
-        return allFound.get(type);
+    public <T extends DatabaseObject> Set<T> get(Class<T> type) {
+        return (Set<T>)allFound.get(type);
     }
-
 
     protected SnapshotGeneratorChain createGeneratorChain(Class<? extends DatabaseObject> databaseObjectType, Database database) {
         SortedSet<SnapshotGenerator> generators = SnapshotGeneratorFactory.getInstance().getGenerators(databaseObjectType, database);
@@ -577,8 +575,8 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         return new SnapshotGeneratorChain(generators);
     }
 
-    private boolean isKnownNull(DatabaseObject example) {
-        Set<DatabaseObject> databaseObjects = knownNull.get(example.getClass());
+    private boolean isKnownNull(DatabaseObject<?> example) {
+        Set<DatabaseObject<?>> databaseObjects = knownNull.get(example.getClass());
         if (databaseObjects == null) {
             return false;
         }

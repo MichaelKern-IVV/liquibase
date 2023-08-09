@@ -1,6 +1,6 @@
 package liquibase.structure.core;
 
-public class View extends Relation {
+public class View extends Relation<View> {
 
     private boolean containsFullDefinition;
 
@@ -40,7 +40,6 @@ public class View extends Relation {
         }
 
         return getName().equalsIgnoreCase(that.getName());
-
     }
 
     @Override

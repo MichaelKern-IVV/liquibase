@@ -12,9 +12,9 @@ import java.util.TreeSet;
 
 public class MockDatabaseSnapshot extends DatabaseSnapshot {
 
-    private final List<DatabaseObject> configuredObjects;
+    private final List<DatabaseObject<?>> configuredObjects;
 
-    public MockDatabaseSnapshot(List<DatabaseObject> configuredObjects, DatabaseObject[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
+    public MockDatabaseSnapshot(List<DatabaseObject<?>> configuredObjects, DatabaseObject[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
         super(null, database, snapshotControl);
         this.configuredObjects = configuredObjects;
         init(examples);
@@ -34,7 +34,7 @@ public class MockDatabaseSnapshot extends DatabaseSnapshot {
         }
 
         @Override
-        public <T extends DatabaseObject> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
+        public <T extends DatabaseObject<T>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
             for (DatabaseObject object : configuredObjects) {
                 if (DatabaseObjectComparatorFactory.getInstance().isSameObject(object, example, null, MockDatabaseSnapshot.this.getDatabase())) {
                     return (T) object;

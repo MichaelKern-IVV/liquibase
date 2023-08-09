@@ -94,9 +94,9 @@ public class CatalogComparator extends CommonCatalogSchemaComparator<Catalog> {
     }
 
     @Override
-    public ObjectDifferences findDifferences(Catalog thisCatalog, Catalog thatCatalog, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Catalog thisCatalog, Catalog thatCatalog, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Catalog> chain, Set<String> exclude) {
         ObjectDifferences differences = new ObjectDifferences(compareControl);
-        differences.compare("name", thisCatalog, thatCatalog, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
+        differences.compare("name", thisCatalog, thatCatalog, new ObjectDifferences.DatabaseObjectNameCompareFunction(Catalog.class, accordingTo));  // TODO: Schema.class ? 
 
         return differences;
     }

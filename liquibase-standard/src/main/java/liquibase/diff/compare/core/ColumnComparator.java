@@ -60,7 +60,7 @@ public class ColumnComparator implements DatabaseObjectComparator<Column> {
     }
 
     @Override
-    public ObjectDifferences findDifferences(Column thisColumn, Column thatColumn, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Column thisColumn, Column thatColumn, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Column> chain, Set<String> exclude) {
         exclude.add("name");
         exclude.add("type");
         exclude.add("autoIncrementInformation");

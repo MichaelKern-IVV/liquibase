@@ -7,12 +7,12 @@ import liquibase.structure.DatabaseObject;
 import java.util.List;
 import java.util.Set;
 
-public class DatabaseObjectComparatorChain {
+public class DatabaseObjectComparatorChain<T extends DatabaseObject<T>> {
     private CompareControl.SchemaComparison[] schemaComparisons;
-    private final List<DatabaseObjectComparator<?>> comparators;
+    private final List<DatabaseObjectComparator<T>> comparators;
     private int nextIndex; //this class is used often enough that the overhead of an iterator adds up to a significant percentage of the execution time
 
-    public DatabaseObjectComparatorChain(List<DatabaseObjectComparator<?>> comparators, CompareControl.SchemaComparison[] schemaComparisons) {
+    public DatabaseObjectComparatorChain(List<DatabaseObjectComparator<T>> comparators, CompareControl.SchemaComparison[] schemaComparisons) {
         this.comparators = comparators;
         this.schemaComparisons = schemaComparisons;
     }
@@ -25,7 +25,7 @@ public class DatabaseObjectComparatorChain {
         return schemaComparisons;
     }
 
-    public boolean isSameObject(DatabaseObject object1, DatabaseObject object2, Database accordingTo) {
+    public boolean isSameObject(T object1, T object2, Database accordingTo) {
         if ((object1 == null) && (object2 == null)) {
             return true;
         }
@@ -41,7 +41,7 @@ public class DatabaseObjectComparatorChain {
             return true;
         }
 
-        DatabaseObjectComparator next = getNextComparator();
+        DatabaseObjectComparator<T> next = getNextComparator();
 
         if (next == null) {
             return true;
@@ -50,12 +50,12 @@ public class DatabaseObjectComparatorChain {
         return next.isSameObject(object1, object2, accordingTo, this);
     }
 
-    public String[] hash(DatabaseObject object, Database accordingTo) {
+    public String[] hash(T object, Database accordingTo) {
         if (object == null) {
             return null;
         }
 
-        DatabaseObjectComparator next = getNextComparator();
+        DatabaseObjectComparator<T> next = getNextComparator();
 
         if (next == null) {
             return null;
@@ -64,7 +64,7 @@ public class DatabaseObjectComparatorChain {
         return next.hash(object, accordingTo, this);
     }
 
-    private DatabaseObjectComparator getNextComparator() {
+    private DatabaseObjectComparator<T> getNextComparator() {
         if (comparators == null) {
             return null;
         }
@@ -73,12 +73,12 @@ public class DatabaseObjectComparatorChain {
             return null;
         }
 
-        DatabaseObjectComparator next = comparators.get(nextIndex);
+        DatabaseObjectComparator<T> next = comparators.get(nextIndex);
         nextIndex++;
         return next;
     }
 
-    public ObjectDifferences findDifferences(DatabaseObject object1, DatabaseObject object2, Database accordingTo, CompareControl compareControl, Set<String> exclude) {
+    public ObjectDifferences findDifferences(DatabaseObject<?> object1, DatabaseObject object2, Database accordingTo, CompareControl compareControl, Set<String> exclude) {
         if ((object1 == null) && (object2 == null)) {
             return new ObjectDifferences(compareControl);
         }

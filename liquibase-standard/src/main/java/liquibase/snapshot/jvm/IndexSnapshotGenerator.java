@@ -29,7 +29,7 @@ public class IndexSnapshotGenerator extends JdbcSnapshotGenerator {
     }
 
     @Override
-    protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
+    protected void addTo(DatabaseObject<?> foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
         if (!snapshot.getSnapshotControl().shouldInclude(Index.class)) {
             return;
         }
@@ -39,7 +39,7 @@ public class IndexSnapshotGenerator extends JdbcSnapshotGenerator {
                 return;
             }
 
-            Relation relation = (Relation) foundObject;
+            Relation<?> relation = (Relation<?>) foundObject;
             Database database = snapshot.getDatabase();
             Schema schema;
             schema = relation.getSchema();

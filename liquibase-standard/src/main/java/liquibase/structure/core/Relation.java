@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * A container of columns. Usually a table or view.
  */
-public abstract class Relation extends AbstractDatabaseObject<Relation> {
+public abstract class Relation<S extends Relation<S>> extends AbstractDatabaseObject<S> {
 
     private String name;
 

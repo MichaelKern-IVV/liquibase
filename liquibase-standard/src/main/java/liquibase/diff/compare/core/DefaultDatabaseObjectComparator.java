@@ -21,7 +21,7 @@ public final class DefaultDatabaseObjectComparator<T extends DatabaseObject<T>> 
     }
 
     @Override
-    public String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public String[] hash(T databaseObject, Database accordingTo, DatabaseObjectComparatorChain<T> chain) {
         String name = databaseObject.getName();
         if (name == null) {
             name = "null";
@@ -30,7 +30,7 @@ public final class DefaultDatabaseObjectComparator<T extends DatabaseObject<T>> 
     }
 
     @Override
-    public boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public boolean isSameObject(T databaseObject1, T databaseObject2, Database accordingTo, DatabaseObjectComparatorChain<T> chain) {
         if ((databaseObject1.getSchema() != null) && (databaseObject2.getSchema() != null) &&
             !DatabaseObjectComparatorFactory.getInstance().isSameObject(databaseObject1.getSchema(),
                 databaseObject2.getSchema(), chain.getSchemaComparisons(), accordingTo)) {
@@ -44,7 +44,7 @@ public final class DefaultDatabaseObjectComparator<T extends DatabaseObject<T>> 
     }
 
     @Override
-    public ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(T databaseObject1, T databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<T> chain, Set<String> exclude) {
 
         Set<String> attributes = new HashSet<>();
         attributes.addAll(databaseObject1.getAttributes());
