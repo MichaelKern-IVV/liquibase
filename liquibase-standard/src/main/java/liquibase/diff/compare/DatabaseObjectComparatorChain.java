@@ -42,12 +42,13 @@ public class DatabaseObjectComparatorChain<T extends DatabaseObject<T>> {
         }
 
         DatabaseObjectComparator<T> next = getNextComparator();
-
         if (next == null) {
             return true;
         }
-
-        return next.isSameObject(object1, object2, accordingTo, this);
+        
+        Class<? extends DatabaseObject> class1 = object1.getClass();
+        Class<? extends DatabaseObject> class2 = object2.getClass();
+        return (class1.isAssignableFrom(class2) || class2.isAssignableFrom(class1)) && next.isSameObject(object1, object2, accordingTo, this);
     }
 
     public String[] hash(T object, Database accordingTo) {

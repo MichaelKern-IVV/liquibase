@@ -60,7 +60,7 @@ public abstract class JdbcSnapshotGenerator implements SnapshotGenerator {
     }
 
     @Override
-    public <T extends DatabaseObject<?>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
+    public <T extends DatabaseObject<T>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
         if ((defaultFor != null) && defaultFor.isAssignableFrom(example.getClass())) {
             return (T) snapshotObject(example, snapshot);
         }
@@ -163,5 +163,4 @@ public abstract class JdbcSnapshotGenerator implements SnapshotGenerator {
         }
         return returnList.toArray(new String[0]);
     }
-    
 }

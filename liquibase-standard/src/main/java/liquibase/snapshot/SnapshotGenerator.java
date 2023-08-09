@@ -39,7 +39,7 @@ public interface SnapshotGenerator {
      * @throws DatabaseException If an operation on the database fails
      * @throws InvalidExampleException If, for some reason, we cannot work on the example object (ambiguous naming etc.)
      */
-    <T extends DatabaseObject<?>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain)
+    <T extends DatabaseObject<T>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain)
         throws DatabaseException, InvalidExampleException;
 
     /**

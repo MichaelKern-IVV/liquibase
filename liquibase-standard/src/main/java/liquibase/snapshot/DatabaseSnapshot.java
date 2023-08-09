@@ -48,7 +48,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
 
     private Map<String, Object> metadata = new ConcurrentHashMap<>();
 
-    DatabaseSnapshot(DatabaseObject<?>[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
+    <T extends DatabaseObject<T>> DatabaseSnapshot(T[] examples, Database database, SnapshotControl snapshotControl) throws DatabaseException, InvalidExampleException {
         this.database = database;
         allFound = new DatabaseObjectCollection(database);
         referencedObjects = new DatabaseObjectCollection(database);
@@ -67,11 +67,11 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
         this.serializableFields.add("metadata");
     }
 
-    public DatabaseSnapshot(DatabaseObject<?>[] examples, Database database) throws DatabaseException, InvalidExampleException {
+    public <T extends DatabaseObject<T>> DatabaseSnapshot(T[] examples, Database database) throws DatabaseException, InvalidExampleException {
         this(examples, database, new SnapshotControl(database));
     }
 
-    protected void init(DatabaseObject<?>[] examples) throws DatabaseException, InvalidExampleException {
+    protected <T extends DatabaseObject<T>> void init(T[] examples) throws DatabaseException, InvalidExampleException {
         if (examples != null) {
             Set<Catalog> catalogs = new HashSet<>();
             for (DatabaseObject object : examples) {
@@ -100,7 +100,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
                     include(catalog);
                 }
             }
-            for (DatabaseObject<?> obj : examples) {
+            for (T obj : examples) {
                 this.snapshotControl.addType(obj.getClass(), database);
 
                 include(obj);
@@ -274,7 +274,7 @@ public abstract class DatabaseSnapshot implements LiquibaseSerializable {
      * if the object does not exist in the database. If the same object was returned by an earlier include() call,
      * the same object instance will be returned.
      */
-    protected <T extends DatabaseObject> T include(T example) throws DatabaseException, InvalidExampleException {
+    protected <T extends DatabaseObject<T>> T include(T example) throws DatabaseException, InvalidExampleException {
         if (example == null) {
             return null;
         }

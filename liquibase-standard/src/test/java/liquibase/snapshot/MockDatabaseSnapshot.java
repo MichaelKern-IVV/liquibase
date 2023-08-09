@@ -35,7 +35,7 @@ public class MockDatabaseSnapshot extends DatabaseSnapshot {
 
         @Override
         public <T extends DatabaseObject<T>> T snapshot(T example, DatabaseSnapshot snapshot, SnapshotGeneratorChain chain) throws DatabaseException, InvalidExampleException {
-            for (DatabaseObject object : configuredObjects) {
+            for (DatabaseObject<?> object : configuredObjects) {
                 if (DatabaseObjectComparatorFactory.getInstance().isSameObject(object, example, null, MockDatabaseSnapshot.this.getDatabase())) {
                     return (T) object;
                 }
