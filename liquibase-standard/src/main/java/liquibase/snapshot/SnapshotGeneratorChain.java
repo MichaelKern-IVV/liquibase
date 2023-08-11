@@ -41,12 +41,11 @@ public class SnapshotGeneratorChain {
         }
 
         SnapshotGenerator next = getNextValidGenerator();
-
         if (next == null) {
             return null;
         }
 
-        T obj = next.snapshot(example, snapshot, this);
+        T obj = (T) next.snapshot(example, snapshot, this);
         if ((obj != null) && (obj.getSnapshotId() == null)) {
             obj.setSnapshotId(snapshotIdService.generateId());
         }

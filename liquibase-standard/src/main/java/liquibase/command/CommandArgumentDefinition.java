@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  * @see CommandBuilder#argument(String, Class) for constructing new instances.
  */
-public class CommandArgumentDefinition<DataType> implements Comparable<CommandArgumentDefinition<?>> {
+public class CommandArgumentDefinition<DataType> implements Comparable<CommandArgumentDefinition<DataType>> {
 
     private static final String ALLOWED_ARGUMENT_REGEX = "[a-zA-Z0-9]+";
     private static final Pattern ALLOWED_ARGUMENT_PATTERN = Pattern.compile(ALLOWED_ARGUMENT_REGEX);
@@ -141,16 +141,15 @@ public class CommandArgumentDefinition<DataType> implements Comparable<CommandAr
     }
 
     @Override
-    public int compareTo(CommandArgumentDefinition<?> o) {
+    public int compareTo(CommandArgumentDefinition<DataType> other) {
         return this.getName().compareTo(o.getName());
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CommandArgumentDefinition that = (CommandArgumentDefinition) o;
-        return Objects.equals(name, that.name);
+        if (this == other) return true;
+        if (other == null || getClass() != other.getClass()) return false;
+        return Objects.equals(name, other.name);
     }
 
     @Override
@@ -274,7 +273,6 @@ public class CommandArgumentDefinition<DataType> implements Comparable<CommandAr
             return this;
         }
 
-
         /**
          * Adds an alias for this command argument
          */
@@ -306,5 +304,4 @@ public class CommandArgumentDefinition<DataType> implements Comparable<CommandAr
             return newCommandArgument;
         }
     }
-
 }

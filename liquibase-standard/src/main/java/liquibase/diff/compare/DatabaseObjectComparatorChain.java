@@ -17,8 +17,8 @@ public class DatabaseObjectComparatorChain<T extends DatabaseObject<T>> {
         this.schemaComparisons = schemaComparisons;
     }
 
-    protected DatabaseObjectComparatorChain copy() {
-        return new DatabaseObjectComparatorChain(comparators, schemaComparisons);
+    protected DatabaseObjectComparatorChain<T> copy() {
+        return new DatabaseObjectComparatorChain<>(comparators, schemaComparisons);
     }
 
     public CompareControl.SchemaComparison[] getSchemaComparisons() {

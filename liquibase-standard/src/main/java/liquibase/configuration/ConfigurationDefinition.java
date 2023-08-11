@@ -205,7 +205,7 @@ public class ConfigurationDefinition<DataType> implements Comparable<Configurati
     }
 
     @Override
-    public int compareTo(ConfigurationDefinition o) {
+    public int compareTo(ConfigurationDefinition<DataType> o) {
         return this.getKey().compareTo(o.getKey());
     }
 
