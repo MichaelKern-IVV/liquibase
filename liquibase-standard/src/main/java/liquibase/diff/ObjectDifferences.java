@@ -46,17 +46,17 @@ public class ObjectDifferences {
         return !differences.isEmpty();
     }
 
-    public <T extends DatabaseObject<T>> void compare(String attribute, T referenceObject, T compareToObject, CompareFunction<T> compareFunction) {
+    public <T extends DatabaseObject<T>> void compare(String attribute, T referenceObject, T compareToObject, CompareFunction<Object> compareFunction) {
         compare(null, attribute, referenceObject, compareToObject, compareFunction);
     }
 
-    public <T extends DatabaseObject<T>> void compare(String message, String attribute, T referenceObject, T compareToObject, CompareFunction<T> compareFunction) {
+    public <T extends DatabaseObject<T>> void compare(String message, String attribute, T referenceObject, T compareToObject, CompareFunction<Object> compareFunction) {
         if (compareControl.isSuppressedField(referenceObject.getClass(), attribute)) {
             return;
         }
 
-        T referenceValue = (T) referenceObject.getAttribute(attribute, referenceObject.getClass());
-        T compareValue =  (T) compareToObject.getAttribute(attribute, compareToObject.getClass());
+        Object referenceValue = referenceObject.getAttribute(attribute, referenceObject.getClass());
+        Object compareValue = compareToObject.getAttribute(attribute, compareToObject.getClass());
 
         referenceValue = undoCollection(referenceValue, compareValue);
         compareValue = undoCollection(compareValue, referenceValue);
@@ -74,7 +74,6 @@ public class ObjectDifferences {
         if (different) {
             addDifference(message, attribute, referenceValue, compareValue);
         }
-
     }
 
     /**
@@ -82,12 +81,12 @@ public class ObjectDifferences {
      * Check the passed potentialCollection and if it is a single-entry collection of the same type as the otherObject, return just the collection element.
      * Otherwise, return the original collection.
      */
-    protected <T extends DatabaseObject<T>> T undoCollection(T potentialCollection, T otherObject) {
+    protected Object undoCollection(Object potentialCollection, Object otherObject) {
         if ((otherObject != null) && (potentialCollection instanceof Collection) &&
                 !(otherObject instanceof Collection)) {
             if ((((Collection<?>) potentialCollection).size() == 1) && ((Collection) potentialCollection).iterator()
                 .next().getClass().equals(otherObject.getClass())) {
-                potentialCollection = (T) ((Collection) potentialCollection).iterator().next();
+                potentialCollection = ((Collection) potentialCollection).iterator().next();
             }
         }
         return potentialCollection;
@@ -205,7 +204,6 @@ public class ObjectDifferences {
                 return false;
             }
 
-
             String object1Name;
             if (referenceValue instanceof DatabaseObject) {
                 object1Name = accordingTo.correctObjectName(((DatabaseObject<?>) referenceValue).getAttribute("name", String.class), type);
@@ -230,35 +228,6 @@ public class ObjectDifferences {
                 return object1Name.equals(object2Name);
             } else {
                 return object1Name.equalsIgnoreCase(object2Name);
-            }
-        }
-    }
-
-    public static class DataTypeCompareFunction implements CompareFunction<DataType> {
-
-        private final Database accordingTo;
-
-        public DataTypeCompareFunction(Database accordingTo) {
-            this.accordingTo = accordingTo;
-        }
-
-        @Override
-        public boolean areEqual(DataType referenceValue, DataType compareToValue) {
-            if ((referenceValue == null) && (compareToValue == null)) {
-                return true;
-            }
-            if ((referenceValue == null) || (compareToValue == null)) {
-                return false;
-            }
-
-            if (!referenceValue.getTypeName().equalsIgnoreCase(compareToValue.getTypeName())) {
-                return false;
-            }
-
-            if (compareToValue.toString().contains("(") && referenceValue.toString().contains("(")) {
-                return compareToValue.toString().equalsIgnoreCase(referenceValue.toString());
-            } else {
-                return true;
             }
         }
     }

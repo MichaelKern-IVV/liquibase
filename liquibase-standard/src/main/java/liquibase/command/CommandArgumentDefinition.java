@@ -141,15 +141,16 @@ public class CommandArgumentDefinition<DataType> implements Comparable<CommandAr
     }
 
     @Override
-    public int compareTo(CommandArgumentDefinition<DataType> other) {
+    public int compareTo(CommandArgumentDefinition<DataType> o) {
         return this.getName().compareTo(o.getName());
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == other) return true;
-        if (other == null || getClass() != other.getClass()) return false;
-        return Objects.equals(name, other.name);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CommandArgumentDefinition<DataType> that = (CommandArgumentDefinition<DataType>) o;
+        return Objects.equals(name, that.name);
     }
 
     @Override
