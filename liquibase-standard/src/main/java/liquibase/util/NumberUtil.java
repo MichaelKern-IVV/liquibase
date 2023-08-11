@@ -62,4 +62,31 @@ public abstract class NumberUtil {
                     "Cannot convert String [" + text + "] to target class [" + targetClass.getName() + "]");
         }
     }
+
+    public static boolean numbersEqual(Number a, Number b) {
+
+        if (!a.getClass().equals(b.getClass())) { //standardize on a common number type
+            boolean aIsInteger = a instanceof Byte || a instanceof Short
+                    || a instanceof Integer || a instanceof Long || a instanceof BigInteger;
+            boolean bIsInteger = b instanceof Byte || b instanceof Short
+                    || b instanceof Integer || b instanceof Long || b instanceof BigInteger;
+            if (aIsInteger && bIsInteger) {
+                if (! (a instanceof BigInteger)) {
+                    a = BigInteger.valueOf(a.longValue());
+                }
+                if (! (b instanceof BigInteger)) {
+                    b = BigInteger.valueOf(b.longValue());
+                }
+            } else {
+                if (! (a instanceof BigDecimal)) {
+                    a = BigDecimal.valueOf(a.doubleValue());
+                }
+                if (! (b instanceof BigDecimal)) {
+                    b = BigDecimal.valueOf(b.doubleValue());
+                }
+            }
+        }
+
+        return a instanceof Comparable && b instanceof Comparable ? ((Comparable) a).compareTo(b) == 0 : a.equals(b);
+    }
 }

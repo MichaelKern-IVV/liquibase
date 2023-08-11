@@ -5,8 +5,10 @@ import liquibase.diff.compare.CompareControl;
 import liquibase.diff.compare.DatabaseObjectComparatorFactory;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.DataType;
+import liquibase.util.NumberUtil;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class ObjectDifferences {
@@ -149,17 +151,8 @@ public class ObjectDifferences {
             if (referenceValue == null || compareToValue == null) {
                 return false;
             }
-
-            if (!referenceValue.getClass().equals(compareToValue.getClass())) { //standardize on a common number type
-                referenceValue = new BigDecimal(referenceValue.toString());
-                compareToValue = new BigDecimal(compareToValue.toString());    			
-            }
-
-            if (referenceValue instanceof Comparable && compareToValue instanceof Comparable) {
-                return ((Comparable) referenceValue).compareTo(compareToValue) == 0;    			
-            }
-
-            return referenceValue.equals(compareToValue);
+            
+            return NumberUtil.numbersEqual(referenceValue, compareToValue);
         }
     }
 
