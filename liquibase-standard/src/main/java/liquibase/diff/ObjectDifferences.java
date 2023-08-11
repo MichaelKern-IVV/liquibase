@@ -106,38 +106,85 @@ public class ObjectDifferences {
 
     public static class StandardCompareFunction implements CompareFunction<Object> {
 
-        private final CompareControl.SchemaComparison[] schemaComparisons;
-        private final Database accordingTo;
+        private final NumberCompareFunction numberCompareFunction;
+        private final DatabaseObjectCompareFunction databaseObjectCompareFunction;
 
         public StandardCompareFunction(CompareControl.SchemaComparison[] schemaComparisons, Database accordingTo) {
-            this.schemaComparisons = schemaComparisons;
-            this.accordingTo = accordingTo;
+            this.numberCompareFunction = new NumberCompareFunction();
+            this.databaseObjectCompareFunction = new DatabaseObjectCompareFunction(accordingTo, schemaComparisons);
         }
 
         @Override
         public boolean areEqual(Object referenceValue, Object compareToValue) {
-            if ((referenceValue == null) && (compareToValue == null)) {
+
+            if (referenceValue == null && compareToValue == null) {
                 return true;
             }
-            if ((referenceValue == null) || (compareToValue == null)) {
+
+            if (referenceValue == null || compareToValue == null) {
                 return false;
             }
 
-            if ((referenceValue instanceof DatabaseObject) && (compareToValue instanceof DatabaseObject)) {
-                return DatabaseObjectComparatorFactory.getInstance().isSameObject((DatabaseObject) referenceValue, (DatabaseObject) compareToValue, schemaComparisons, accordingTo);
-            } else {
-                if ((referenceValue instanceof Number) && (compareToValue instanceof Number)
-                        && !referenceValue.getClass().equals(compareToValue.getClass())) { //standardize on a common number type
-                    referenceValue = new BigDecimal(referenceValue.toString());
-                    compareToValue = new BigDecimal(compareToValue.toString());
-                }
-                if ((referenceValue instanceof Number) && (referenceValue instanceof Comparable)) {
-                    return (compareToValue instanceof Number) && (((Comparable) referenceValue).compareTo
-                        (compareToValue) == 0);
-                } else {
-                    return referenceValue.equals(compareToValue);
-                }
+            if (referenceValue instanceof DatabaseObject && compareToValue instanceof DatabaseObject) {
+            	return databaseObjectCompareFunction.areEqual((DatabaseObject<?>) referenceValue, (DatabaseObject<?>) compareToValue);
             }
+
+            if (referenceValue instanceof Number && compareToValue instanceof Number) {
+            	return numberCompareFunction.areEqual((Number) referenceValue, (Number) compareToValue);
+            }
+
+            return referenceValue.equals(compareToValue);
+        }
+    }
+    
+    public static class NumberCompareFunction implements CompareFunction<Number> {
+
+        @Override
+        public boolean areEqual(Number referenceValue, Number compareToValue) {
+
+            if (referenceValue == null && compareToValue == null) {
+                return true;
+            }
+
+            if (referenceValue == null || compareToValue == null) {
+                return false;
+            }
+
+            if (!referenceValue.getClass().equals(compareToValue.getClass())) { //standardize on a common number type
+                referenceValue = new BigDecimal(referenceValue.toString());
+                compareToValue = new BigDecimal(compareToValue.toString());    			
+            }
+
+            if (referenceValue instanceof Comparable && compareToValue instanceof Comparable) {
+                return ((Comparable) referenceValue).compareTo(compareToValue) == 0;    			
+            }
+
+            return referenceValue.equals(compareToValue);
+        }
+    }
+
+    public static class DatabaseObjectCompareFunction implements CompareFunction<DatabaseObject<?>> {
+
+        private final CompareControl.SchemaComparison[] schemaComparisons;
+        private final Database accordingTo;
+
+        public DatabaseObjectCompareFunction(Database accordingTo, CompareControl.SchemaComparison...schemaComparisons) {
+            this.schemaComparisons = schemaComparisons == null ? new CompareControl.SchemaComparison[0] : schemaComparisons;
+            this.accordingTo = accordingTo;
+        }
+
+        @Override
+        public boolean areEqual(DatabaseObject<?> referenceValue, DatabaseObject<?> compareToValue) {
+
+            if (referenceValue == null && compareToValue == null) {
+                return true;
+            }
+
+            if (referenceValue == null || compareToValue == null) {
+                return false;
+            }
+
+            return DatabaseObjectComparatorFactory.getInstance().isSameObject(referenceValue, compareToValue, schemaComparisons, accordingTo);
         }
     }
 
@@ -151,10 +198,12 @@ public class ObjectDifferences {
 
         @Override
         public boolean areEqual(Object referenceValue, Object compareToValue) {
-            if ((referenceValue == null) && (compareToValue == null)) {
+
+            if (referenceValue == null && compareToValue == null) {
                 return true;
             }
-            if ((referenceValue == null) || (compareToValue == null)) {
+
+            if (referenceValue == null || compareToValue == null) {
                 return false;
             }
 
@@ -178,6 +227,15 @@ public class ObjectDifferences {
 
         @Override
         public boolean areEqual(Object referenceValue, Object compareToValue) {
+
+            if (referenceValue == null && compareToValue == null) {
+                return true;
+            }
+
+            if (referenceValue == null || compareToValue == null) {
+                return false;
+            }
+
             if (referenceValue instanceof Collection) {
                 if (!(compareToValue instanceof Collection)) {
                     return false;
@@ -195,13 +253,6 @@ public class ObjectDifferences {
                     }
                     return true;
                 }
-            }
-
-            if ((referenceValue == null) && (compareToValue == null)) {
-                return true;
-            }
-            if ((referenceValue == null) || (compareToValue == null)) {
-                return false;
             }
 
             String object1Name;
@@ -242,10 +293,12 @@ public class ObjectDifferences {
 
         @Override
         public boolean areEqual(Collection<?> referenceValue, Collection<?> compareToValue) {
-            if ((referenceValue == null) && (compareToValue == null)) {
+
+            if (referenceValue == null && compareToValue == null) {
                 return true;
             }
-            if ((referenceValue == null) || (compareToValue == null)) {
+
+            if (referenceValue == null || compareToValue == null) {
                 return false;
             }
 
@@ -279,10 +332,12 @@ public class ObjectDifferences {
 
         @Override
         public boolean areEqual(Collection<?> referenceValue, Collection<?> compareToValue) {
-            if ((referenceValue == null) && (compareToValue == null)) {
+
+            if (referenceValue == null && compareToValue == null) {
                 return true;
             }
-            if ((referenceValue == null) || (compareToValue == null)) {
+
+            if (referenceValue == null || compareToValue == null) {
                 return false;
             }
 
