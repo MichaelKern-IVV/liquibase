@@ -246,8 +246,8 @@ create table table1 (
                     "-precondition 123\n" +
                     "select 1;"
 
-    private static final String VALID_ALL_CAPS_CHANGELOG = """
---LIQUIBASE FORMATTED SQL
+    private static final String VALID_ALL_CAPS_CHANGELOG =
+"""--LIQUIBASE FORMATTED SQL
 
 --CHANGESET SOME_USER:ALL_CAPS_SCRIPT_1
 CREATE TABLE ALL_CAPS_TABLE_1 (
@@ -267,6 +267,106 @@ CREATE TABLE ALL_CAPS_TABLE_2 (
     CITY VARCHAR(30)
 )
 """
+
+    private static final String VALID_CHANGELOG_TABLE_EXISTS_CASE = """
+--liquibase formatted sql
+
+--property name:idProp value:1
+--property name:authorProp value:nvoxland
+--property nAmE:tableNameProp value:table1
+--property name:runwith value: sqlplus
+
+
+--changeset \${authorProp}:\${idProp}
+select * from \${tableNameProp};
+
+
+--changeset "n voxland":"change 2" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+create table table1 (
+    id int primary key
+);
+
+--changeset "n voxland":"change 3" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+--precondition-table-exists table:table1 schema:12345
+create table table2 (
+    id int primary key
+);
+""".trim()
+
+    private static final String INVALID_CHANGELOG_TABLE_EXISTS_MISSING_TABLE_NAME = """
+--liquibase formatted sql
+
+--property name:idProp value:1
+--property name:authorProp value:nvoxland
+--property nAmE:tableNameProp value:table1
+--property name:runwith value: sqlplus
+
+
+--changeset \${authorProp}:\${idProp}
+select * from \${tableNameProp};
+
+
+--changeset "n voxland":"change 2" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+create table table1 (
+    id int primary key
+);
+
+--changeset "n voxland":"change 3" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+--precondition-table-exists
+create table table2 (
+    id int primary key
+);
+""".trim()
+
+    private static final String VALID_CHANGELOG_VIEW_EXISTS_CASE = """
+--liquibase formatted sql
+
+--property name:idProp value:1
+--property name:authorProp value:nvoxland
+--property nAmE:tableNameProp value:table1
+--property name:runwith value: sqlplus
+
+
+--changeset \${authorProp}:\${idProp}
+select * from \${tableNameProp};
+
+
+--changeset "n voxland":"change 2" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+create table table1 (
+    id int primary key
+);
+
+--changeset "n voxland":"change 3" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+--precondition-view-exists view:view1 schema:12345'
+create table table1 (
+    id int primary key
+);
+""".trim()
+
+    private static final String INVALID_CHANGELOG_VIEW_EXISTS_MISSING_VIEW_NAME = """
+--liquibase formatted sql
+
+--property name:idProp value:1
+--property name:authorProp value:nvoxland
+--property nAmE:tableNameProp value:table1
+--property name:runwith value: sqlplus
+
+
+--changeset \${authorProp}:\${idProp}
+select * from \${tableNameProp};
+
+
+--changeset "n voxland":"change 2" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+create table table1 (
+    id int primary key
+);
+
+--changeset "n voxland":"change 3" (stripComments:false splitStatements:false endDelimiter:X runOnChange:true runAlways:true contextFilter:y dbms:mysql runInTransaction:false failOnError:false)
+--precondition-view-exists
+create table table1 (
+    id int primary key
+);
+""".trim()
 
     def supports() throws Exception {
         expect:
@@ -291,6 +391,7 @@ CREATE TABLE ALL_CAPS_TABLE_2 (
         assert e != null
         assert e instanceof ChangeLogParseException
         assert e.getMessage().toLowerCase().contains("--precondition-sql-check")
+        assert e.getMessage().contains("Unexpected formatting in formatted changelog 'asdf.sql' at line 4.")
     }
 
     def parse() throws Exception {
@@ -528,6 +629,7 @@ CREATE TABLE ALL_CAPS_TABLE_2 (
         then:
         def e = thrown(ChangeLogParseException)
         assert e
+        assert e.getMessage().contains("Unexpected formatting in formatted changelog 'asdf.sql' at line 3.")
     }
 
     def "parse changeset with 'onSqlOutput' precondition set"() throws Exception {
@@ -1098,6 +1200,62 @@ create table table1 (
         then: "change log parameters are created"
         changeLog.getChangeLogParameters().hasValue("DEFAULT_VALUE", changeLog) == true
         changeLog.getChangeLogParameters().getValue("DEFAULT_VALUE", changeLog) == "0"
+    }
+
+    def parseTableExists() throws Exception {
+        expect:
+        ChangeLogParameters params = new ChangeLogParameters()
+        params.set("tablename", "table4")
+        DatabaseChangeLog changeLog = new MockFormattedSqlChangeLogParser(VALID_CHANGELOG_TABLE_EXISTS_CASE).parse("asdf.sql", params, new JUnitResourceAccessor())
+        changeLog.getLogicalFilePath() == "asdf.sql"
+        changeLog.getChangeSets().size() == 3
+        changeLog.getChangeSets().get(2).getPreconditions().nestedPreconditions.size() == 1
+        changeLog.getChangeSets().get(2).getPreconditions().nestedPreconditions.name[0] == "tableExists"
+        changeLog.getChangeSets().get(2).getPreconditions().nestedPreconditions.get(0).getSerializableFieldValue("tableName") == "table1"
+        changeLog.getChangeSets().get(2).getPreconditions().nestedPreconditions.get(0).getSerializableFieldValue("schemaName") == "12345"
+    }
+
+    def "parse error empty tableExists precondition when missing table name parameter"() throws Exception {
+        given:
+        ChangeLogParameters params = new ChangeLogParameters()
+        params.set("tablename", "table4")
+
+        when:
+        DatabaseChangeLog changeLog = new MockFormattedSqlChangeLogParser(INVALID_CHANGELOG_TABLE_EXISTS_MISSING_TABLE_NAME).parse("asdf.sql", params, new JUnitResourceAccessor())
+
+        then:
+        def e = thrown(ChangeLogParseException)
+        e.getMessage().contains("Precondition table exists failed because of missing required table name parameter.")
+    }
+
+    def "parse error empty viewExists precondition when missing view name parameter"() throws Exception {
+        given:
+        ChangeLogParameters params = new ChangeLogParameters()
+        params.set("tablename", "table4")
+
+        when:
+        DatabaseChangeLog changeLog = new MockFormattedSqlChangeLogParser(INVALID_CHANGELOG_VIEW_EXISTS_MISSING_VIEW_NAME).parse("asdf.sql", params, new JUnitResourceAccessor())
+
+        then:
+        def e = thrown(ChangeLogParseException)
+        e.getMessage().contains("Precondition view exists failed because of missing required view name parameter.")
+    }
+
+    def "parse error empty sqlCheck precondition when missing expectedResult parameter"() throws Exception {
+        given:
+        ChangeLogParameters params = new ChangeLogParameters()
+        params.set("tablename", "table4")
+
+        when:
+        final String invalid_sql_check_precondition = "--liquibase formatted sql\n" +
+                "--changeset test1:test1\n" +
+                "--precondition-sql-check\n" +
+                "create table pctest2 (id number);"
+        DatabaseChangeLog changeLog = new MockFormattedSqlChangeLogParser(invalid_sql_check_precondition).parse("asdf.sql", params, new JUnitResourceAccessor())
+
+        then:
+        def e = thrown(ChangeLogParseException)
+        e.getMessage().contains("Precondition sql check failed because of missing required expectedResult and sql parameters.")
     }
 
     @LiquibaseService(skip = true)

@@ -6,6 +6,8 @@ import liquibase.database.OfflineConnection;
 import liquibase.exception.DatabaseException;
 import liquibase.executor.ExecutorService;
 import liquibase.statement.core.RawSqlStatement;
+import liquibase.structure.DatabaseObject;
+import liquibase.structure.core.Table;
 import liquibase.util.StringUtil;
 
 public class DB2Database extends AbstractDb2Database {
@@ -37,7 +39,7 @@ public class DB2Database extends AbstractDb2Database {
 				throw new DatabaseException("Error getting fix pack number");
 
 			return getDatabaseMajorVersion() > 11
-					|| getDatabaseMajorVersion() == 11 && getDatabaseMinorVersion() >= 1 && fixPack.intValue() >= 1;
+                                || getDatabaseMajorVersion() == 11 && ( getDatabaseMinorVersion() == 1 && fixPack.intValue() >= 1 || getDatabaseMinorVersion() > 1 );
 
 		} catch (final DatabaseException e) {
 			return false; // assume not
@@ -62,4 +64,13 @@ public class DB2Database extends AbstractDb2Database {
 		return "DB2/LUW";
 	}
 
+	@Override
+	public boolean supportsCreateIfNotExists(Class<? extends DatabaseObject> type) {
+		return type.isAssignableFrom(Table.class);
+	}
+
+	@Override
+	public boolean supportsDatabaseChangeLogHistory() {
+		return true;
+	}
 }

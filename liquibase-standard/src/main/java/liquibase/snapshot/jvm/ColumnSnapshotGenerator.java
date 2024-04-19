@@ -38,6 +38,11 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
     private static final String POSTGRES_NUMBER_VALUE_REGEX = "\\(?(\\d*)\\)?::[\\w .]+";
     private static final Pattern POSTGRES_NUMBER_VALUE_PATTERN = Pattern.compile(POSTGRES_NUMBER_VALUE_REGEX);
 
+    private static final String MYSQL_DEFAULT_GENERATED = "DEFAULT_GENERATED";
+    private static final String GENERATED_ALWAYS_AS = "GENERATED ALWAYS AS ";
+    private static final String YES_VALUE = "YES";
+    private static final String IS_GENERATED_COLUMN = "IS_GENERATEDCOLUMN";
+
     private final ColumnAutoIncrementService columnAutoIncrementService = new ColumnAutoIncrementService();
 
 
@@ -143,7 +148,7 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
 
     @Override
     protected void addTo(DatabaseObject foundObject, DatabaseSnapshot snapshot) throws DatabaseException {
-        if (!snapshot.getSnapshotControl().shouldInclude(Column.class)) {
+        if (!snapshot.getSnapshotControl().shouldInclude(Column.class) || !snapshot.getDatabase().supports(Column.class)) {
             return;
         }
         if (foundObject instanceof Relation) {
@@ -463,9 +468,9 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
 
         // For SAP (Sybase) SQL ANywhere, JDBC returns "LONG(2147483647) binary" (the number is 2^31-1)
         // but when creating a column, LONG BINARY must not have parameters.
-        // The same applies to LONG(...) VARCHAR.
+        // The same applies to LONG(...) VARCHAR and LONG(...) NVARCHAR.
         if (database instanceof SybaseASADatabase
-                && ("LONG BINARY".equalsIgnoreCase(columnTypeName) || "LONG VARCHAR".equalsIgnoreCase(columnTypeName))) {
+                && ("LONG BINARY".equalsIgnoreCase(columnTypeName) || "LONG VARCHAR".equalsIgnoreCase(columnTypeName) || "LONG NVARCHAR".equalsIgnoreCase(columnTypeName))) {
             columnSize = null;
         }
 
@@ -520,7 +525,7 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
         if ((database instanceof OracleDatabase) && (columnMetadataResultSet.get(COLUMN_DEF_COL) == null)) {
             columnMetadataResultSet.set(COLUMN_DEF_COL, columnMetadataResultSet.get("DATA_DEFAULT"));
 
-            if ((columnMetadataResultSet.get(COLUMN_DEF_COL) != null) && "NULL".equalsIgnoreCase((String)
+            if ((columnMetadataResultSet.get(COLUMN_DEF_COL) != null) && StringUtil.equalsWordNull((String)
                     columnMetadataResultSet.get(COLUMN_DEF_COL))) {
                 columnMetadataResultSet.set(COLUMN_DEF_COL, null);
             }
@@ -531,10 +536,10 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
                 return new DatabaseFunction((String) columnDef);
             }
 
-            if ("YES".equals(columnMetadataResultSet.get("VIRTUAL_COLUMN"))) {
+            if (YES_VALUE.equals(columnMetadataResultSet.get("VIRTUAL_COLUMN"))) {
                 Object virtColumnDef = columnMetadataResultSet.get(COLUMN_DEF_COL);
-                if ((virtColumnDef != null) && !"null".equals(virtColumnDef)) {
-                    columnMetadataResultSet.set(COLUMN_DEF_COL, "GENERATED ALWAYS AS (" + virtColumnDef + ")");
+                if ((virtColumnDef != null) && !StringUtil.equalsWordNull(virtColumnDef.toString())) {
+                    columnMetadataResultSet.set(COLUMN_DEF_COL, GENERATED_ALWAYS_AS + "(" + virtColumnDef.toString().replace("\"", "") + ")");
                 }
             }
 
@@ -552,21 +557,61 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
             readDefaultValueForPostgresDatabase(columnMetadataResultSet, columnInfo);
         }
 
-        if (
-                (database instanceof AbstractDb2Database) &&
-                        ((columnMetadataResultSet.get(COLUMN_DEF_COL) != null) &&
-                                "NULL".equalsIgnoreCase((String) columnMetadataResultSet.get(COLUMN_DEF_COL)))) {
+        if (database instanceof MySQLDatabase) {
+            readDefaultValueForMysqlDatabase(columnMetadataResultSet, columnInfo, database);
+        }
+
+        if ((database instanceof AbstractDb2Database)
+                && ((columnMetadataResultSet.get(COLUMN_DEF_COL) != null)
+                && StringUtil.equalsWordNull((String) columnMetadataResultSet.get(COLUMN_DEF_COL)))) {
             columnMetadataResultSet.set(COLUMN_DEF_COL, null);
         }
 
-        if (database instanceof SybaseASADatabase && "YES".equals(columnMetadataResultSet.get("IS_GENERATEDCOLUMN"))) {
-            Object virtColumnDef = columnMetadataResultSet.get(COLUMN_DEF_COL);
-            if ((virtColumnDef != null) && !"null".equals(virtColumnDef)) {
-                columnMetadataResultSet.set(COLUMN_DEF_COL, "COMPUTE (" + virtColumnDef + ")");
-            }
+        if (database instanceof SybaseASADatabase) {
+            String defaultValue = (String) columnMetadataResultSet.get(COLUMN_DEF_COL);
+
+           // SQL Anywhere returns `CURRENT DATE` (without underscore), which no other RDBMS would understand
+           defaultValue = defaultValue.replaceAll("(?i)\\bCURRENT\\s+DATE\\b", "{fn CURDATE()}");
+
+           // SQL Anywhere returns `CURRENT TIME` (without underscore), which no other RDBMS would understand
+           defaultValue = defaultValue.replaceAll("(?i)\\bCURRENT\\s+TIME\\b", "{fn CURTIME()}");
+
+           // SQL Anywhere returns `CURRENT TIMESTAMP` (without underscore), which no other RDBMS would understand
+           defaultValue = defaultValue.replaceAll("(?i)\\bCURRENT\\s+TIMESTAMP\\b", "{fn NOW()}");
+
+           // SQL Anywhere returns `CURRENT USER` (without underscore), which no other RDBMS would understand
+           defaultValue = defaultValue.replaceAll("(?i)\\bCURRENT\\s+USER\\b", "{fn USER()}");
+
+           columnMetadataResultSet.set(COLUMN_DEF_COL, defaultValue);
+
+           if (YES_VALUE.equals(columnMetadataResultSet.get(IS_GENERATED_COLUMN))) {
+               Object virtColumnDef = columnMetadataResultSet.get(COLUMN_DEF_COL);
+               if ((virtColumnDef != null) && !StringUtil.equalsWordNull(virtColumnDef.toString())) {
+                   columnMetadataResultSet.set(COLUMN_DEF_COL, "COMPUTE (" + virtColumnDef + ")");
+               }
+           }
         }
 
         return SqlUtil.parseValue(database, columnMetadataResultSet.get(COLUMN_DEF_COL), columnInfo.getType());
+    }
+
+    private void readDefaultValueForMysqlDatabase(CachedRow columnMetadataResultSet, Column column, Database database) {
+        try {
+            String extraValue = Scope.getCurrentScope().getSingleton(ExecutorService.class)
+                    .getExecutor("jdbc", database)
+                    .queryForObject(new RawSqlStatement("SELECT EXTRA FROM INFORMATION_SCHEMA.COLUMNS\n" +
+                            "WHERE TABLE_SCHEMA = '" + column.getSchema().getName() + "'\n" +
+                            "AND TABLE_NAME = '" + column.getRelation().getName() + "'\n" +
+                            "AND COLUMN_NAME = '" + column.getName() + "'"), String.class);
+            if (extraValue != null && !extraValue.isEmpty() &&
+                (extraValue.startsWith(MYSQL_DEFAULT_GENERATED + " ") || extraValue.toLowerCase(Locale.ENGLISH).contains("on update"))
+            ) {
+                columnMetadataResultSet.set(COLUMN_DEF_COL,
+                        String.format("%s %s", columnMetadataResultSet.get(COLUMN_DEF_COL), extraValue.replace(MYSQL_DEFAULT_GENERATED, "").trim()));
+            }
+        } catch (DatabaseException e) {
+            Scope.getCurrentScope().getLog(getClass()).warning("Error fetching extra values", e);
+        }
     }
 
     private void readDefaultValueForPostgresDatabase(CachedRow columnMetadataResultSet, Column columnInfo) {
@@ -588,12 +633,14 @@ public class ColumnSnapshotGenerator extends JdbcSnapshotGenerator {
             columnMetadataResultSet.set(COLUMN_DEF_COL, defaultValue);
         }
 
-        if ("YES".equals(columnMetadataResultSet.get("IS_GENERATEDCOLUMN"))) {
+        if (YES_VALUE.equals(columnMetadataResultSet.get(IS_GENERATED_COLUMN))) {
             Object virtColumnDef = columnMetadataResultSet.get(COLUMN_DEF_COL);
-            if ((virtColumnDef != null) && !"null".equals(virtColumnDef)) {
+            if (virtColumnDef != null && !StringUtil.equalsWordNull(virtColumnDef.toString()) &&
+                !String.valueOf(virtColumnDef).startsWith(GENERATED_ALWAYS_AS) // to avoid duplication
+            ) {
                 // Column type added on PG 12 and until PG 15 only STORED mode is supported and jdbc metadata just say "YES" or "NO"
                 // VIRTUAL support is yet to be implemented, so we need to come back here if that happens and see what needs to be changed
-                columnMetadataResultSet.set(COLUMN_DEF_COL, "GENERATED ALWAYS AS " + virtColumnDef + " STORED");
+                columnMetadataResultSet.set(COLUMN_DEF_COL, GENERATED_ALWAYS_AS + virtColumnDef + " STORED");
             }
         }
     }

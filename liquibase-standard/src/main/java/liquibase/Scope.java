@@ -6,7 +6,6 @@ import liquibase.database.DatabaseConnection;
 import liquibase.database.OfflineConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.UnexpectedLiquibaseException;
-import liquibase.integration.commandline.LiquibaseCommandLineConfiguration;
 import liquibase.listener.LiquibaseListener;
 import liquibase.logging.LogService;
 import liquibase.logging.Logger;
@@ -26,6 +25,7 @@ import liquibase.ui.UIService;
 import liquibase.util.CollectionUtil;
 import liquibase.util.SmartMap;
 import liquibase.util.StringUtil;
+import lombok.Getter;
 
 import java.lang.reflect.Constructor;
 import java.nio.charset.Charset;
@@ -64,29 +64,38 @@ public class Scope {
         databaseChangeLog,
         changeSet,
         osgiPlatform,
-        checksumVersion
+        checksumVersion,
+        latestChecksumVersion,
+        /**
+         * A <code>Map<String, String></code> of arguments/configuration properties used in the maven invocation of Liquibase.
+         */
+        mavenConfigurationProperties
     }
 
-    private static ScopeManager scopeManager;
+    public static final String JAVA_PROPERTIES = "javaProperties";
 
-    private Scope parent;
+    private static final ThreadLocal<ScopeManager> scopeManager = new ThreadLocal<>();
+
+    private final Scope parent;
     private final SmartMap values = new SmartMap();
-    private String scopeId;
+    @Getter
+    private final String scopeId;
     private static final Map<String, List<MdcObject>> addedMdcEntries = new ConcurrentHashMap<>();
 
     private LiquibaseListener listener;
 
     public static Scope getCurrentScope() {
-        if (scopeManager == null) {
-            scopeManager = new SingletonScopeManager();
+        if (scopeManager.get() == null) {
+            scopeManager.set(new SingletonScopeManager());
         }
-        if (scopeManager.getCurrentScope() == null) {
+        if (scopeManager.get().getCurrentScope() == null) {
             Scope rootScope = new Scope();
-            scopeManager.setCurrentScope(rootScope);
+            scopeManager.get().setCurrentScope(rootScope);
 
             rootScope.values.put(Attr.logService.name(), new JavaLogService());
             rootScope.values.put(Attr.serviceLocator.name(), new StandardServiceLocator());
             rootScope.values.put(Attr.resourceAccessor.name(), new ClassLoaderResourceAccessor());
+            rootScope.values.put(Attr.latestChecksumVersion.name(), ChecksumVersion.V9);
             rootScope.values.put(Attr.checksumVersion.name(), ChecksumVersion.latest());
 
             rootScope.values.put(Attr.ui.name(), new ConsoleUIService());
@@ -109,11 +118,11 @@ public class Scope {
             rootScope.values.put(Attr.serviceLocator.name(), serviceLocator);
             rootScope.values.put(Attr.osgiPlatform.name(), ContainerChecker.isOsgiPlatform());
         }
-        return scopeManager.getCurrentScope();
+        return scopeManager.get().getCurrentScope();
     }
 
     public static void setScopeManager(ScopeManager scopeManager) {
-        Scope.scopeManager = scopeManager;
+        Scope.scopeManager.set(scopeManager);
     }
 
     /**
@@ -137,14 +146,12 @@ public class Scope {
         this.parent = parent;
         scopeId = generateScopeId();
         if (scopeValues != null) {
-            for (Map.Entry<String, Object> entry : scopeValues.entrySet()) {
-                values.put(entry.getKey(), entry.getValue());
-            }
+            values.putAll(scopeValues);
         }
     }
 
     private String generateScopeId() {
-        return StringUtil.randomIdentifer(10).toLowerCase();
+        return StringUtil.randomIdentifier(10).toLowerCase();
     }
 
     /**
@@ -214,7 +221,7 @@ public class Scope {
         Scope originalScope = getCurrentScope();
         Scope child = new Scope(originalScope, scopeValues);
         child.listener = listener;
-        scopeManager.setCurrentScope(child);
+        scopeManager.get().setCurrentScope(child);
 
         return child.scopeId;
     }
@@ -236,7 +243,7 @@ public class Scope {
             mdcObject.close();
         }
 
-        scopeManager.setCurrentScope(currentScope.getParent());
+        scopeManager.get().setCurrentScope(currentScope.getParent());
     }
 
     /**
@@ -283,9 +290,14 @@ public class Scope {
      */
     public <T> T get(String key, Class<T> type) {
         T value = values.get(key, type);
+        if (value == null && values.containsKey(JAVA_PROPERTIES)) {
+            Map javaProperties = values.get(JAVA_PROPERTIES, Map.class);
+            value = (T)javaProperties.get(key);
+        }
         if (value == null && parent != null) {
             value = parent.get(key, type);
         }
+
         return value;
     }
 
@@ -410,7 +422,7 @@ public class Scope {
      *                             then it should be set to true.
      */
     public MdcObject addMdcValue(String key, String value, boolean removeWhenScopeExits) {
-        MdcObject mdcObject = getMdcManager().put(key, value);
+        MdcObject mdcObject = getMdcManager().put(key, value, removeWhenScopeExits);
         removeMdcObjectWhenScopeExits(removeWhenScopeExits, mdcObject);
 
         return mdcObject;
@@ -430,7 +442,7 @@ public class Scope {
      * Add a key value pair to the MDC using the MDC manager. This key value pair will be automatically removed from the
      * MDC when this scope exits.
      */
-    public MdcObject addMdcValue(String key, Map<String, String> value) {
+    public MdcObject addMdcValue(String key, Map<String, Object> value) {
         return addMdcValue(key, value, true);
     }
 
@@ -440,8 +452,8 @@ public class Scope {
      *                             scope exits. If there is not a demonstrable reason for setting this parameter to false
      *                             then it should be set to true.
      */
-    public MdcObject addMdcValue(String key, Map<String, String> value, boolean removeWhenScopeExits) {
-        MdcObject mdcObject = getMdcManager().put(key, value);
+    public MdcObject addMdcValue(String key, Map<String, Object> value, boolean removeWhenScopeExits) {
+        MdcObject mdcObject = getMdcManager().put(key, value, removeWhenScopeExits);
         removeMdcObjectWhenScopeExits(removeWhenScopeExits, mdcObject);
 
         return mdcObject;
@@ -462,7 +474,7 @@ public class Scope {
      *                             then it should be set to true.
      */
     public MdcObject addMdcValue(String key, CustomMdcObject customMdcObject, boolean removeWhenScopeExits) {
-        MdcObject mdcObject = getMdcManager().put(key, customMdcObject);
+        MdcObject mdcObject = getMdcManager().put(key, customMdcObject, removeWhenScopeExits);
         removeMdcObjectWhenScopeExits(removeWhenScopeExits, mdcObject);
 
         return mdcObject;

@@ -13,7 +13,7 @@ import liquibase.structure.core.Schema;
 
 import java.util.Set;
 
-public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
+public class SchemaComparator extends CommonCatalogSchemaComparator {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         if (Schema.class.isAssignableFrom(objectType)) {
@@ -23,12 +23,15 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
     }
 
     @Override
-    public String[] hash(Schema schema, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
         return null;
     }
 
     @Override
-    public boolean isSameObject(Schema thisSchema, Schema otherSchema, Database accordingTo, DatabaseObjectComparatorChain<Schema> chain) {
+    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
+        if (!((databaseObject1 instanceof Schema) && (databaseObject2 instanceof Schema))) {
+            return false;
+        }
 
         String schemaName1 = null;
         String schemaName2 = null;
@@ -36,19 +39,19 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
         // the flag will be set true in multi catalog environments
         boolean shouldIncludeCatalog = GlobalConfiguration.INCLUDE_CATALOG_IN_SPECIFICATION.getCurrentValue();
         if (shouldIncludeCatalog) {
-            Catalog catalog1 = thisSchema.getCatalog();
-            Catalog catalog2 = otherSchema.getCatalog();
+            Catalog catalog1 = ((Schema) databaseObject1).getCatalog();
+            Catalog catalog2 = ((Schema) databaseObject2).getCatalog();
             if (!DatabaseObjectComparatorFactory.getInstance().isSameObject(catalog1, catalog2, chain.getSchemaComparisons(), accordingTo)) {
                 return false;
             }
         }
-        if (accordingTo.supportsSchemas()) {
-            schemaName1 = thisSchema.getName();
-            schemaName2 = otherSchema.getName();
+        if (accordingTo.supports(Schema.class)) {
+            schemaName1 = databaseObject1.getName();
+            schemaName2 = databaseObject2.getName();
 
-        } else if (accordingTo.supportsCatalogs()) {
-            schemaName1 = thisSchema.getCatalogName();
-            schemaName2 = otherSchema.getCatalogName();
+        } else if (accordingTo.supports(Catalog.class)) {
+            schemaName1 = ((Schema) databaseObject1).getCatalogName();
+            schemaName2 = ((Schema) databaseObject2).getCatalogName();
         }
 
         if (equalsSchemas(accordingTo, schemaName1, schemaName2)) {
@@ -83,17 +86,17 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
             }
         }
 
-        schemaName1 = thisSchema.toCatalogAndSchema().standardize(accordingTo).getSchemaName();
-        schemaName2 = otherSchema.toCatalogAndSchema().standardize(accordingTo).getSchemaName();
+        schemaName1 = ((Schema) databaseObject1).toCatalogAndSchema().standardize(accordingTo).getSchemaName();
+        schemaName2 = ((Schema) databaseObject2).toCatalogAndSchema().standardize(accordingTo).getSchemaName();
 
         return equalsSchemas(accordingTo, schemaName1, schemaName2);
     }
 
     private String getSchemaAfterComparison(Database accordingTo, String schemaName1) {
         if (schemaName1 == null) {
-            if (accordingTo.supportsSchemas()) {
+            if (accordingTo.supports(Schema.class)) {
                 schemaName1 = accordingTo.getDefaultSchemaName();
-            } else if (accordingTo.supportsCatalogs()) {
+            } else if (accordingTo.supports(Catalog.class)) {
                 schemaName1 = accordingTo.getDefaultCatalogName();
             }
         }
@@ -119,9 +122,9 @@ public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
     }
 
     @Override
-    public ObjectDifferences findDifferences(Schema thisSchema, Schema otherSchema, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Schema> chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
         ObjectDifferences differences = new ObjectDifferences(compareControl);
-        differences.compare("name", thisSchema, otherSchema, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
+        differences.compare("name", databaseObject1, databaseObject2, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
 
         return differences;
     }

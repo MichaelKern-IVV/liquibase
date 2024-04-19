@@ -2,6 +2,8 @@ package liquibase.command.core;
 
 import liquibase.GlobalConfiguration;
 import liquibase.Scope;
+import liquibase.changeset.ChangeSetService;
+import liquibase.changeset.ChangeSetServiceFactory;
 import liquibase.command.*;
 import liquibase.database.Database;
 import liquibase.exception.DatabaseException;
@@ -19,7 +21,10 @@ import liquibase.util.StringUtil;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 
 public class ExecuteSqlCommandStep extends AbstractCommandStep {
 
@@ -62,7 +67,7 @@ public class ExecuteSqlCommandStep extends AbstractCommandStep {
         final Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
         final String sqlText = getSqlScript(sql, sqlFile);
         final StringBuilder out = new StringBuilder();
-        final String[] sqlStrings = StringUtil.processMultiLineSQL(sqlText, true, true, commandScope.getArgumentValue(DELIMITER_ARG));
+        final String[] sqlStrings = StringUtil.processMultiLineSQL(sqlText, true, true, determineEndDelimiter(commandScope), null);
 
         for (String sqlString : sqlStrings) {
             if (sqlString.toLowerCase().matches("\\s*select .*")) {
@@ -79,14 +84,23 @@ public class ExecuteSqlCommandStep extends AbstractCommandStep {
         resultsBuilder.addResult("output", out.toString());
     }
 
-    private void handleOutput(CommandResultsBuilder resultsBuilder, String output) throws IOException {
+    protected static String determineEndDelimiter(CommandScope commandScope) {
+        String delimiter = commandScope.getArgumentValue(DELIMITER_ARG);
+        if (delimiter == null) {
+            ChangeSetService service = ChangeSetServiceFactory.getInstance().createChangeSetService();
+            delimiter = service.getEndDelimiter(null);
+        }
+        return delimiter;
+    }
+
+    protected void handleOutput(CommandResultsBuilder resultsBuilder, String output) throws IOException {
         String charsetName = GlobalConfiguration.OUTPUT_FILE_ENCODING.getCurrentValue();
         Writer outputWriter = new OutputStreamWriter(resultsBuilder.getOutputStream(), charsetName);
         outputWriter.write(output);
         outputWriter.flush();
     }
 
-    private String getSqlScript(String sql, String sqlFile) throws IOException, LiquibaseException {
+    protected String getSqlScript(String sql, String sqlFile) throws IOException, LiquibaseException {
         if (sqlFile == null) {
             return sql;
         } else {
@@ -106,7 +120,7 @@ public class ExecuteSqlCommandStep extends AbstractCommandStep {
         if (rows.isEmpty()) {
             out.append("-- Empty Resultset --\n");
         } else {
-            SortedSet<String> keys = new TreeSet<>();
+            LinkedHashSet<String> keys = new LinkedHashSet<>();
             for (Map<String, ?> row : rows) {
                 keys.addAll(row.keySet());
             }

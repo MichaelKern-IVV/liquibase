@@ -20,8 +20,6 @@ import liquibase.exception.MigrationFailedException;
 import liquibase.executor.Executor;
 import liquibase.executor.ExecutorService;
 import liquibase.executor.LoggingExecutor;
-import liquibase.integration.commandline.LiquibaseCommandLineConfiguration;
-import liquibase.statement.core.UpdateChangeSetChecksumStatement;
 
 import java.util.Objects;
 import java.util.Set;
@@ -68,10 +66,11 @@ public class UpdateVisitor implements ChangeSetVisitor {
         CheckSum oldChecksum = updateCheckSumIfRequired(changeSet);
         if (isAccepted) {
             executeAcceptedChange(changeSet, databaseChangeLog, database);
+            this.database.commit();
         } else if ((oldChecksum == null || oldChecksum.getVersion() < ChecksumVersion.latest().getVersion())) {
             upgradeCheckSumVersionForAlreadyExecutedOrNullChange(changeSet, database, oldChecksum);
+            this.database.commit();
         }
-        this.database.commit();
     }
 
     /**
@@ -126,11 +125,11 @@ public class UpdateVisitor implements ChangeSetVisitor {
         if (!Objects.equals(runStatus, RunStatus.NOT_RAN) && Objects.equals(execType, ExecType.EXECUTED)) {
             execType = ExecType.RERAN;
         }
-        fireRan(changeSet, databaseChangeLog, database, execType);
         addAttributesForMdc(changeSet, execType);
         // reset object quoting strategy after running changeset
         this.database.setObjectQuotingStrategy(previousStr);
         this.database.markChangeSetExecStatus(changeSet, execType);
+        fireRan(changeSet, databaseChangeLog, database, execType);
     }
 
     protected void fireRunFailed(ChangeSet changeSet, DatabaseChangeLog databaseChangeLog, Database database, MigrationFailedException e) {

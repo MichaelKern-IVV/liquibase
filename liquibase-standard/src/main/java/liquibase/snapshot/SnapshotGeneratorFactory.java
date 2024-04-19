@@ -2,9 +2,7 @@ package liquibase.snapshot;
 
 import liquibase.CatalogAndSchema;
 import liquibase.Scope;
-import liquibase.database.Database;
-import liquibase.database.DatabaseConnection;
-import liquibase.database.OfflineConnection;
+import liquibase.database.*;
 import liquibase.database.core.PostgresDatabase;
 import liquibase.diff.compare.DatabaseObjectComparatorFactory;
 import liquibase.exception.DatabaseException;
@@ -103,8 +101,9 @@ public class SnapshotGeneratorFactory {
          * SELECT COUNT(*) on that table. If that works, we count that as confirmation of existence.
          */
         // @todo Actually, there may be extreme cases (distorted table statistics etc.) where a COUNT(*) might not be so cheap. Maybe SELECT a dummy constant is the better way?
-        if ((example instanceof Table) && (example.getName().equals(database.getDatabaseChangeLogTableName()) ||
-            example.getName().equals(database.getDatabaseChangeLogLockTableName()))) {
+        LiquibaseTableNamesFactory liquibaseTableNamesFactory = Scope.getCurrentScope().getSingleton(LiquibaseTableNamesFactory.class);
+        List<String> liquibaseTableNames = liquibaseTableNamesFactory.getLiquibaseTableNames(database);
+        if ((example instanceof Table) && (liquibaseTableNames.stream().anyMatch(tableName -> example.getName().equals(tableName)))) {
             try {
                 Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database).queryForInt(
                         new RawSqlStatement("SELECT COUNT(*) FROM " +
@@ -182,6 +181,7 @@ public class SnapshotGeneratorFactory {
 
         }
 
+        Scope.getCurrentScope().getLog(SnapshotGeneratorFactory.class).info("Creating snapshot");
         return createSnapshot(schemas, database, snapshotControl);
     }
 
@@ -243,40 +243,60 @@ public class SnapshotGeneratorFactory {
     }
 
     public Table getDatabaseChangeLogTable(SnapshotControl snapshotControl, Database database) throws DatabaseException {
+        // use LEGACY quoting since we're dealing with system objects
+        ObjectQuotingStrategy currentStrategy = database.getObjectQuotingStrategy();
+        database.setObjectQuotingStrategy(ObjectQuotingStrategy.LEGACY);
         try {
             Table liquibaseTable = (Table) new Table().setName(database.getDatabaseChangeLogTableName()).setSchema(
                     new Schema(database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName()));
             return createSnapshot(liquibaseTable, database, snapshotControl);
         } catch (InvalidExampleException e) {
             throw new UnexpectedLiquibaseException(e);
+        } finally {
+            database.setObjectQuotingStrategy(currentStrategy);
         }
     }
 
     public Table getDatabaseChangeLogLockTable(Database database) throws DatabaseException {
+        // use LEGACY quoting since we're dealing with system objects
+        ObjectQuotingStrategy currentStrategy = database.getObjectQuotingStrategy();
+        database.setObjectQuotingStrategy(ObjectQuotingStrategy.LEGACY);
         try {
             Table example = (Table) new Table().setName(database.getDatabaseChangeLogLockTableName()).setSchema(
                     new Schema(database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName()));
             return createSnapshot(example, database);
         } catch (InvalidExampleException e) {
             throw new UnexpectedLiquibaseException(e);
+        } finally {
+            database.setObjectQuotingStrategy(currentStrategy);
         }
     }
 
     public boolean hasDatabaseChangeLogTable(Database database) throws DatabaseException {
+        // use LEGACY quoting since we're dealing with system objects
+        ObjectQuotingStrategy currentStrategy = database.getObjectQuotingStrategy();
+        database.setObjectQuotingStrategy(ObjectQuotingStrategy.LEGACY);
         try {
             return has(new Table().setName(database.getDatabaseChangeLogTableName()).setSchema(new Schema(
                     database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName())), database);
         } catch (InvalidExampleException e) {
             throw new UnexpectedLiquibaseException(e);
+        } finally {
+            database.setObjectQuotingStrategy(currentStrategy);
         }
     }
 
     public boolean hasDatabaseChangeLogLockTable(Database database) throws DatabaseException {
+        // use LEGACY quoting since we're dealing with system objects
+        ObjectQuotingStrategy currentStrategy = database.getObjectQuotingStrategy();
+        database.setObjectQuotingStrategy(ObjectQuotingStrategy.LEGACY);
         try {
             return has(new Table().setName(database.getDatabaseChangeLogLockTableName()).setSchema(
                     new Schema(database.getLiquibaseCatalogName(), database.getLiquibaseSchemaName())), database);
         } catch (InvalidExampleException e) {
             throw new UnexpectedLiquibaseException(e);
+        } finally {
+            database.setObjectQuotingStrategy(currentStrategy);
         }
     }
 

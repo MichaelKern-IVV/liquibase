@@ -40,7 +40,7 @@ import static liquibase.statement.SqlStatement.EMPTY_SQL_STATEMENT;
  * Creates a new view.
  */
 @DatabaseChange(name = "createView", description = "Create a new database view", priority = ChangeMetaData.PRIORITY_DEFAULT)
-public class CreateViewChange extends AbstractChange {
+public class CreateViewChange extends AbstractChange implements ReplaceIfExists {
 
     private String catalogName;
     private String schemaName;
@@ -96,6 +96,7 @@ public class CreateViewChange extends AbstractChange {
         return replaceIfExists;
     }
 
+    @Override
     public void setReplaceIfExists(Boolean replaceIfExists) {
         this.replaceIfExists = replaceIfExists;
     }
@@ -157,7 +158,7 @@ public class CreateViewChange extends AbstractChange {
             if ((StringUtil.trimToNull(getSelectQuery()) == null) && (StringUtil.trimToNull(getPath()) == null)) {
                 validate.addError("For a createView change, you must specify either 'path' or a nested view " +
                         "definition in " +
-                        "" + Scope.getCurrentScope().getSingleton(ChangeFactory.class).getChangeMetaData(this).getName());
+                        Scope.getCurrentScope().getSingleton(ChangeFactory.class).getChangeMetaData(this).getName());
             }
 
         }

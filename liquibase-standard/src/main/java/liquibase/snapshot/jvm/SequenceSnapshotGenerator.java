@@ -47,7 +47,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
 
     @Override
     protected void addTo(DatabaseObject<?> foundObject, DatabaseSnapshot snapshot) throws DatabaseException, InvalidExampleException {
-        if (!(foundObject instanceof Schema) || !snapshot.getDatabase().supportsSequences()) {
+        if (!(foundObject instanceof Schema) || !snapshot.getDatabase().supports(Sequence.class)) {
             return;
         }
         Schema schema = (Schema) foundObject;
@@ -80,10 +80,9 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
                 return example;
             }
 
-            if (!database.supportsSequences()) {
+            if (!database.supports(Sequence.class)) {
                 return null;
             }
-
             sequences = Scope.getCurrentScope().getSingleton(ExecutorService.class)
                     .getExecutor("jdbc", database)
                     .queryForList(getSelectSequenceStatement(example.getSchema(), database));
@@ -161,7 +160,7 @@ public class SequenceSnapshotGenerator extends JdbcSnapshotGenerator {
             if (database.getDatabaseProductName().startsWith("DB2 UDB for AS/400")) {
                 return new RawSqlStatement("SELECT SEQNAME AS SEQUENCE_NAME FROM QSYS2.SYSSEQUENCES WHERE SEQSCHEMA = '" + schema.getCatalogName() + "'");
             }
-            return new RawSqlStatement("SELECT SEQNAME AS SEQUENCE_NAME FROM SYSCAT.SEQUENCES WHERE SEQTYPE='S' AND SEQSCHEMA = '" + schema.getCatalogName() + "'");
+            return new RawParameterizedSqlStatement("SELECT SEQNAME AS SEQUENCE_NAME FROM SYSCAT.SEQUENCES WHERE SEQTYPE='S' AND SEQSCHEMA = ?", schema.getCatalogName());
         } else if (database instanceof Db2zDatabase) {
             return new RawParameterizedSqlStatement ("SELECT NAME AS SEQUENCE_NAME, " +
                     "START AS START_VALUE, " +

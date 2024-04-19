@@ -48,6 +48,7 @@ public class OracleDatabase extends AbstractJdbcDatabase {
     protected final int SHORT_IDENTIFIERS_LENGTH = 30;
     protected final int LONG_IDENTIFIERS_LEGNTH = 128;
     public static final int ORACLE_12C_MAJOR_VERSION = 12;
+    public static final int ORACLE_23C_MAJOR_VERSION = 23;
 
     private final Set<String> reservedWords = new HashSet<>();
     private Set<String> userDefinedTypes;
@@ -279,6 +280,14 @@ public class OracleDatabase extends AbstractJdbcDatabase {
     @Override
     public boolean supportsSequences() {
         return true;
+    }
+
+    @Override
+    public boolean supports(Class<? extends DatabaseObject> object) {
+        if (Schema.class.isAssignableFrom(object)) {
+            return false;
+        }
+        return super.supports(object);
     }
 
     /**
@@ -668,6 +677,11 @@ public class OracleDatabase extends AbstractJdbcDatabase {
             throw new UnexpectedLiquibaseException("Cannot determine the Oracle database version number", ex);
         }
 
+    }
+
+    @Override
+    public boolean supportsDatabaseChangeLogHistory() {
+        return true;
     }
 
 }

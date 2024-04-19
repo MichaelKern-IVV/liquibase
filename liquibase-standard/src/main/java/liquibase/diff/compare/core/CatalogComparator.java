@@ -30,7 +30,7 @@ public class CatalogComparator extends CommonCatalogSchemaComparator<Catalog> {
     @Override
     public boolean isSameObject(Catalog thisCatalog, Catalog thatCatalog, Database accordingTo, DatabaseObjectComparatorChain chain) {
 
-        if (!accordingTo.supportsCatalogs()) {
+        if (!accordingTo.supports(Catalog.class)) {
             return true;
         }
 

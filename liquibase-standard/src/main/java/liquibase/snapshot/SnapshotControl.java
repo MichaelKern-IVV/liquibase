@@ -1,6 +1,7 @@
 package liquibase.snapshot;
 
 import liquibase.database.Database;
+import liquibase.database.core.FirebirdDatabase;
 import liquibase.diff.output.ObjectChangeFilter;
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.parser.core.ParsedNode;
@@ -8,9 +9,11 @@ import liquibase.parser.core.ParsedNodeException;
 import liquibase.resource.ResourceAccessor;
 import liquibase.serializer.LiquibaseSerializable;
 import liquibase.structure.DatabaseObject;
+import liquibase.structure.core.Catalog;
 import liquibase.structure.core.DatabaseObjectFactory;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Allows the class user to influence various aspects of the database object snapshot generation, e.g.
@@ -22,8 +25,8 @@ public class SnapshotControl implements LiquibaseSerializable {
     private ObjectChangeFilter objectChangeFilter;
     private SnapshotListener snapshotListener;
     private boolean warnIfObjectNotFound = true;
-    
-    
+
+
     /**
      * Create a SnapshotControl for a given database and mark the database's standard types for inclusion.
      * @param database the DBMS for which snapshots should be generated
@@ -31,16 +34,18 @@ public class SnapshotControl implements LiquibaseSerializable {
     public SnapshotControl(Database database) {
         setTypes(DatabaseObjectFactory.getInstance().getStandardTypes(), database);
     }
-    
+
     /**
      * Create a Snapshot control for a given database, but explicitly set the object types to be included in snapshots.
      * @param database the DBMS for which snapshots should be generated
      * @param types the list of object types to be included in the snapshot
      */
+    @SafeVarargs
     public SnapshotControl(Database database, Class<? extends DatabaseObject>... types) {
         this(database, true, types);
     }
 
+    @SafeVarargs
     public SnapshotControl(Database database, boolean expandTypesIfNeeded, Class<? extends DatabaseObject>... types) {
         if ((types == null) || (types.length == 0)) {
             setTypes(DatabaseObjectFactory.getInstance().getStandardTypes(), database);
@@ -52,7 +57,7 @@ public class SnapshotControl implements LiquibaseSerializable {
             }
         }
     }
-    
+
     /**
      * Create a Snapshot control for a given database, but explicitly set the object types to be included in snapshots.
      * @param database the DBMS for which snapshots should be generated
@@ -90,11 +95,11 @@ public class SnapshotControl implements LiquibaseSerializable {
     @Override
     public Object getSerializableFieldValue(String field) {
         if ("includedType".equals(field)) {
-            SortedSet<String> types = new TreeSet<>();
+            SortedSet<String> typesNames = new TreeSet<>();
             for (Class<? extends DatabaseObject> type : this.getTypesToInclude()) {
-                types.add(type.getName());
+                typesNames.add(type.getName());
             }
-            return types;
+            return typesNames;
         } else {
             throw new UnexpectedLiquibaseException("Unknown field "+field);
         }
@@ -121,11 +126,15 @@ public class SnapshotControl implements LiquibaseSerializable {
 
     private void setTypes(Set<Class<? extends DatabaseObject>> types, Database database) {
         this.types = new HashSet<>();
-        for (Class<? extends DatabaseObject> type : types) {
-            addType(type, database);
+        Stream<Class<? extends DatabaseObject>> objectStream = types.stream();
+        if (database != null) {
+            // Firebird does not support catalogs, but we need to include them in the snapshot for it as it has a catalog name
+            // Something incorrectly implemented in the FirebirdDatabase class that we work around here
+            objectStream = objectStream.filter(t -> (database.supports(t) || (database instanceof FirebirdDatabase && t.equals(Catalog.class))));
         }
+        objectStream.forEach(type -> addType(type, database));
     }
-    
+
     /**
      * Adds a new DatabaseObject type to the list of object types to be included in snapshots.
      * @param type The type to be added
@@ -141,7 +150,7 @@ public class SnapshotControl implements LiquibaseSerializable {
         }
         return added;
     }
-    
+
     /**
      * Return the types to be included in snapshots
      * @return the set of currently registered types
@@ -149,7 +158,7 @@ public class SnapshotControl implements LiquibaseSerializable {
     public Set<Class<? extends DatabaseObject>> getTypesToInclude() {
         return types;
     }
-    
+
     /**
      * Queries the currently registered list of types to be included and returns true if the given type is in that list
      * @param type the DatabaseObject type to be checked
@@ -168,7 +177,7 @@ public class SnapshotControl implements LiquibaseSerializable {
     public ParsedNode serialize() {
         throw new RuntimeException("TODO");
     }
-    
+
     /**
      * Returns if the code should log a LogLevel.WARNING message if the object to be snapshotted could not be found.
      * @return true if WARNINGs should be emitted (default), false if not.
@@ -176,7 +185,7 @@ public class SnapshotControl implements LiquibaseSerializable {
     public boolean isWarnIfObjectNotFound() {
         return warnIfObjectNotFound;
     }
-    
+
     /**
      * Configures the code to log a LogLevel.WARNING message if the object to be snapshotted could not be found.
      * @param warnIfObjectNotFound true if a warning should emitted (default value), false if not.

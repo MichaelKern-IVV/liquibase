@@ -18,6 +18,7 @@ Long Description: NOT SET
 Required Args:
   changelogFile (String) Changelog file to write results
   referenceUrl (String) The JDBC reference database connection URL
+    OBFUSCATED
   url (String) The JDBC database connection URL
     OBFUSCATED
 Optional Args:
@@ -60,6 +61,10 @@ Optional Args:
     Default: null
   referenceDriverPropertiesFile (String) The JDBC driver properties file for the reference database
     Default: null
+  referenceLiquibaseCatalogName (String) Reference catalog to use for Liquibase objects
+    Default: null
+  referenceLiquibaseSchemaName (String) Reference schema to use for Liquibase objects
+    Default: null
   referencePassword (String) The reference database password
     Default: null
     OBFUSCATED
@@ -67,13 +72,21 @@ Optional Args:
     Default: null
   referenceUsername (String) The reference database username
     Default: null
+  replaceIfExistsTypes (String) Sets replaceIfExists="true" for changes of these types (supported types: createProcedure, createView)
+    Default: none
+  runOnChangeTypes (String) Sets runOnChange="true" for changesets containing solely changes of these types (e. g. createView, createProcedure, ...).
+    Default: none
   schemas (String) Schemas to include in diff
     Default: null
+  skipObjectSorting (Boolean) When true will skip object sorting. This can be useful on databases that have a lot of packages/procedures that are linked to each other
+    Default: false
+  useOrReplaceOption (Boolean) If true, will add 'OR REPLACE' option to the create view change object
+    Default: false
   username (String) Username to use to connect to the database
     Default: null
 """
 
-    run "Running diffChangelog against itself finds no differences", {
+    run "Running diffChangelog against itself finds no differences and don't generate an output file", {
         arguments = [
                 url              : { it.url },
                 username         : { it.username },
@@ -105,16 +118,7 @@ Optional Args:
 
         }
 
-        expectedFileContent = [
-                //
-                // Empty changelog contains no changeSet tags and an empty databaseChangeLog tag
-                //
-                "target/test-classes/diffChangelog-test.xml" :
-                        [
-                            CommandTests.assertNotContains("<changeSet"),
-                            Pattern.compile("^.*<?xml.*databaseChangeLog.*xsd./>", Pattern.MULTILINE|Pattern.DOTALL|Pattern.CASE_INSENSITIVE)
-                        ]
-        ]
+        expectFileToNotExist = new File("target/test-classes/diffChangelog-test.xml")
     }
 
     run "Running diffChangelog should add changesets with specified author", {

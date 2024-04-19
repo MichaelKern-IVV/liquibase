@@ -8,6 +8,8 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.UnexpectedLiquibaseException;
 import liquibase.executor.jvm.ColumnMapRowMapper;
 import liquibase.executor.jvm.RowMapperResultSetExtractor;
+import liquibase.structure.core.Catalog;
+import liquibase.structure.core.Schema;
 import liquibase.util.JdbcUtil;
 import liquibase.util.StringUtil;
 
@@ -162,9 +164,9 @@ public class ResultSetCache {
         }
 
         public String createSchemaKey(Database database) {
-            if (!database.supportsCatalogs() && !database.supportsSchemas()) {
+            if (!database.supports(Catalog.class) && !database.supports(Schema.class)) {
                 return "all";
-            } else if (database.supportsCatalogs() && database.supportsSchemas()) {
+            } else if (database.supports(Catalog.class) && database.supports(Schema.class)) {
                 if (CatalogAndSchema.CatalogAndSchemaCase.ORIGINAL_CASE.
                         equals(database.getSchemaAndCatalogCase())) {
                     return (catalog + "." + schema);
@@ -226,16 +228,11 @@ public class ResultSetCache {
         }
 
         protected List<CachedRow> executeAndExtract(String sql, Database database) throws DatabaseException, SQLException {
-            return executeAndExtract(sql, database, false);
+            return executeAndExtract(database, false, sql);
         }
 
         protected List<CachedRow> executeAndExtract(Database database, String sql, Object...parameters) throws DatabaseException, SQLException {
             return executeAndExtract(database, false, sql, parameters);
-        }
-
-        protected List<CachedRow> executeAndExtract(String sql, Database database, boolean informixTrimHint)
-                throws DatabaseException, SQLException {
-            return executeAndExtract(database, informixTrimHint, sql);
         }
 
         protected List<CachedRow> executeAndExtract(Database database, boolean informixTrimHint, String sql, Object...parameters)
@@ -273,7 +270,6 @@ public class ResultSetCache {
 
             return expectedValue.equals(foundValue);
         }
-
 
         public abstract RowData rowKeyParameters(CachedRow row);
 

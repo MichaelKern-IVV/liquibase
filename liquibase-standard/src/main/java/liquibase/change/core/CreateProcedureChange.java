@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 @DatabaseChange(name = "createProcedure", description = "Defines a stored procedure.", priority = ChangeMetaData.PRIORITY_DEFAULT)
-public class CreateProcedureChange extends AbstractChange implements DbmsTargetedChange {
+public class CreateProcedureChange extends AbstractChange implements DbmsTargetedChange, ReplaceIfExists {
     private String comments;
     private String catalogName;
     private String schemaName;
@@ -133,7 +133,8 @@ public class CreateProcedureChange extends AbstractChange implements DbmsTargete
             isChangeProperty = false, version = {ChecksumVersion.V8})
     @DatabaseChangeProperty(
         description = procedureTextDescription,
-            serializationType = SerializationType.DIRECT_VALUE)
+            serializationType = SerializationType.DIRECT_VALUE,
+            alternatePropertyNames = {"procedureBody"})
     public String getProcedureText() {
         return procedureText;
     }
@@ -175,6 +176,7 @@ public class CreateProcedureChange extends AbstractChange implements DbmsTargete
         return replaceIfExists;
     }
 
+    @Override
     public void setReplaceIfExists(Boolean replaceIfExists) {
         this.replaceIfExists = replaceIfExists;
     }
@@ -304,9 +306,8 @@ public class CreateProcedureChange extends AbstractChange implements DbmsTargete
         CheckSum checkSum;
         try {
             if (getPath() == null) {
-                String procedureText = sqlText;
                 Charset encoding = GlobalConfiguration.FILE_ENCODING.getCurrentValue();
-                if (procedureText != null) {
+                if (sqlText != null) {
                     stream = new ByteArrayInputStream(sqlText.getBytes(encoding));
                 }
             }

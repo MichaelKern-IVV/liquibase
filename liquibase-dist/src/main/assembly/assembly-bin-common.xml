@@ -70,10 +70,6 @@
 	<files>
 		<!-- specifying the outputDirectory as file.separator puts it in the root -->
 		<file>
-			<source>../LICENSE.txt</source>
-			<outputDirectory>${file.separator}</outputDirectory>
-		</file>
-		<file>
 			<source>../ABOUT.txt</source>
 			<outputDirectory>${file.separator}</outputDirectory>
 		</file>
@@ -115,6 +111,7 @@
 
             <!-- some libraries lie about compile vs. runtime dependencies. Or we don't hit code that uses these. So exclude them manually. -->
             <excludes>
+                <exclude>org.slf4j:slf4j-api:jar:</exclude> <!-- from sqlite-jdbc -->
                 <exclude>org.antlr:antlr4-runtime:jar:</exclude>  <!-- from connector-api -->
                 <exclude>org.checkerframework:checker-qual:jar:</exclude> <!-- from postgresql -->
                 <exclude>commons-beanutils:commons-beanutils:jar:</exclude> <!-- from opencsv -->
@@ -130,10 +127,14 @@
 				<exclude>org.liquibase:liquibase-standard:jar:</exclude> <!-- from liquibase-standard  -->
 				<exclude>net.java.truelicense:*:jar:</exclude> <!-- from liquibase-commercial -->
 				<exclude>com.github.jsqlparser:jsqlparser:jar:</exclude> <!-- from liquibase-commercial -->
+				<exclude>org.mvel:mvel2:jar:</exclude> <!-- from liquibase-commercial -->
 				<exclude>commons-codec:commons-codec:jar:</exclude> <!-- from liquibase-commercial -->
 				<exclude>com.fasterxml.jackson.core:*:jar:</exclude> <!-- from liquibase-commercial -->
 				<exclude>com.fasterxml.jackson.module:*:jar:</exclude> <!-- from liquibase-commercial -->
-            </excludes>
+				<exclude>com.github.spullara.mustache.java:compiler:jar:</exclude> <!-- from liquibase-commercial -->
+				<exclude>io.github.java-diff-utils:java-diff-utils:jar:</exclude> <!-- from liquibase-commercial -->
+				<exclude>com.github.vertical-blank:sql-formatter:jar:</exclude> <!-- from liquibase-commercial -->
+			</excludes>
 		</dependencySet>
 	</dependencySets>
 </component>
