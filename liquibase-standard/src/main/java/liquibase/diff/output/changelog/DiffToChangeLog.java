@@ -30,7 +30,6 @@ import liquibase.serializer.ChangeLogSerializerFactory;
 import liquibase.snapshot.DatabaseSnapshot;
 import liquibase.snapshot.EmptyDatabaseSnapshot;
 import liquibase.statement.core.RawParameterizedSqlStatement;
-import liquibase.statement.core.RawSqlStatement;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.Column;
 import liquibase.structure.core.StoredDatabaseLogic;
@@ -365,10 +364,10 @@ public class DiffToChangeLog {
     }
 
     private void setReplaceIfExistsTrueIfApplicable(Change[] changes) {
-        if(changes !=null && diffOutputControl.isReplaceIfExistsSet()) {
-            for(int i=0; i < changes.length; i++) {
-                if (changes[i] instanceof ReplaceIfExists) {
-                    ((ReplaceIfExists) changes[i]).setReplaceIfExists(true);
+        if (changes !=null && diffOutputControl.isReplaceIfExistsSet()) {
+            for (Change change : changes) {
+                if (change instanceof ReplaceIfExists) {
+                    ((ReplaceIfExists) change).setReplaceIfExists(true);
                 }
             }
         }
@@ -403,7 +402,7 @@ public class DiffToChangeLog {
     private DatabaseObjectCollectionComparator getDatabaseObjectCollectionComparator() {
         return new DatabaseObjectCollectionComparator() {
             @Override
-            public int compare(DatabaseObject o1, DatabaseObject o2) {
+            public int compare(DatabaseObject<?> o1, DatabaseObject<?> o2) {
                 if (o1 instanceof Column && o1.getAttribute(ORDER_ATTRIBUTE, Integer.class) != null && o2.getAttribute(ORDER_ATTRIBUTE, Integer.class) != null) {
                     int i = o1.getAttribute(ORDER_ATTRIBUTE, Integer.class).compareTo(o2.getAttribute(ORDER_ATTRIBUTE, Integer.class));
                     if (i != 0) {
@@ -575,15 +574,15 @@ public class DiffToChangeLog {
         return name;
     }
 
-    private List<Map<String, ?>> queryForDependenciesOracle(Executor executor, List<String> schemas)
+    private List<Map<String, Object>> queryForDependenciesOracle(Executor executor, List<String> schemas)
             throws DatabaseException {
-        List<Map<String, ?>> rs = null;
+        List<Map<String, Object>> rs = null;
         try {
             if (tryDbaDependencies) {
-                rs = executor.queryForList(new RawSqlStatement("select OWNER, NAME, REFERENCED_OWNER, REFERENCED_NAME from DBA_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(OWNER = REFERENCED_OWNER AND NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "OWNER='" + obj + "'"
+                rs = executor.queryForList(new RawParameterizedSqlStatement("select OWNER, NAME, REFERENCED_OWNER, REFERENCED_NAME from DBA_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(OWNER = REFERENCED_OWNER AND NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "OWNER='" + obj + "'"
                 ) + ")"));
             } else {
-                rs = executor.queryForList(new RawSqlStatement("select NAME, REFERENCED_OWNER, REFERENCED_NAME from USER_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "REFERENCED_OWNER='" + obj + "'"
+                rs = executor.queryForList(new RawParameterizedSqlStatement("select NAME, REFERENCED_OWNER, REFERENCED_NAME from USER_DEPENDENCIES where REFERENCED_OWNER != 'SYS' AND NOT(NAME LIKE 'BIN$%') AND NOT(NAME = REFERENCED_NAME) AND (" + StringUtil.join(schemas, " OR ", (StringUtil.StringUtilFormatter<String>) obj -> "REFERENCED_OWNER='" + obj + "'"
                 ) + ")"));
             }
         } catch (DatabaseException dbe) {
@@ -622,8 +621,8 @@ public class DiffToChangeLog {
         if (database instanceof DB2Database) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
             String sql = "select TABSCHEMA, TABNAME, BSCHEMA, BNAME from syscat.tabdep where TABSCHEMA in (" + StringUtil.join(schemas, ", ", obj -> "?") + ")";
-            List<Map<String, ?>> rs = executor.queryForList(new RawParameterizedSqlStatement(sql, schemas.toArray()));
-            for (Map<String, ?> row : rs) {
+            List<Map<String, Object>> rs = executor.queryForList(new RawParameterizedSqlStatement(sql, schemas.toArray()));
+            for (Map<String, Object> row : rs) {
                 String tabName = StringUtil.trimToNull((String) row.get("TABSCHEMA")) + "." + StringUtil.trimToNull((String) row.get("TABNAME"));
                 String bName = StringUtil.trimToNull((String) row.get("BSCHEMA")) + "." + StringUtil.trimToNull((String) row.get("BNAME"));
 
@@ -632,8 +631,8 @@ public class DiffToChangeLog {
         } else if (database instanceof Db2zDatabase) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
             String sql = "SELECT DSCHEMA AS TABSCHEMA, DNAME AS TABNAME, BSCHEMA, BNAME FROM SYSIBM.SYSDEPENDENCIES WHERE DSCHEMA IN (" + StringUtil.join(schemas, ", ", obj -> "?") + ")";
-            List<Map<String, ?>> rs = executor.queryForList(new RawParameterizedSqlStatement(sql, schemas.toArray()));
-            for (Map<String, ?> row : rs) {
+            List<Map<String, Object>> rs = executor.queryForList(new RawParameterizedSqlStatement(sql, schemas.toArray()));
+            for (Map<String, Object> row : rs) {
                 String tabName = StringUtil.trimToNull((String) row.get("TABSCHEMA")) + "." + StringUtil.trimToNull((String) row.get("TABNAME"));
                 String bName = StringUtil.trimToNull((String) row.get("BSCHEMA")) + "." + StringUtil.trimToNull((String) row.get("BNAME"));
 
@@ -641,8 +640,8 @@ public class DiffToChangeLog {
             }
         } else if (database instanceof OracleDatabase) {
             Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
-            List<Map<String, ?>> rs = queryForDependenciesOracle(executor, schemas);
-            for (Map<String, ?> row : rs) {
+            List<Map<String, Object>> rs = queryForDependenciesOracle(executor, schemas);
+            for (Map<String, Object> row : rs) {
                 String tabName = null;
                 if (tryDbaDependencies) {
                     tabName =
@@ -718,7 +717,7 @@ public class DiffToChangeLog {
             //get non-clustered indexes -> unique clustered indexes on views dependencies
             sql += " UNION select object_schema_name(c.object_id) as referencing_schema_name, c.name as referencing_name, object_schema_name(nc.object_id) as referenced_schema_name, nc.name as referenced_name from sys.indexes c join sys.indexes nc on c.object_id=nc.object_id JOIN sys.objects o ON c.object_id = o.object_id where  c.index_id != nc.index_id and c.type_desc='CLUSTERED' and c.is_unique='true' and (not(nc.type_desc='CLUSTERED') OR nc.is_unique='false') AND o.type_desc='VIEW' AND o.name='AR_DETAIL_OPEN'";
 
-            List<Map<String, ?>> rs = executor.queryForList(new RawSqlStatement(sql));
+            List<Map<String, Object>> rs = executor.queryForList(new RawParameterizedSqlStatement(sql));
             if (!rs.isEmpty()) {
                 for (Map<String, ?> row : rs) {
                     String bName = StringUtil.trimToNull((String) row.get("REFERENCED_SCHEMA_NAME")) + "." + StringUtil.trimToNull((String) row.get("REFERENCED_NAME"));
@@ -732,7 +731,7 @@ public class DiffToChangeLog {
         } else if (database instanceof PostgresDatabase) {
             final String sql = queryForDependenciesPostgreSql(schemas);
             final Executor executor = Scope.getCurrentScope().getSingleton(ExecutorService.class).getExecutor("jdbc", database);
-            final List<Map<String, ?>> queryForListResult = executor.queryForList(new RawSqlStatement(sql));
+            final List<Map<String, Object>> queryForListResult = executor.queryForList(new RawParameterizedSqlStatement(sql));
 
             for (Map<String, ?> row : queryForListResult) {
                 String bName = StringUtil.trimToEmpty((String) row.get("REFERENCING_SCHEMA_NAME")) +

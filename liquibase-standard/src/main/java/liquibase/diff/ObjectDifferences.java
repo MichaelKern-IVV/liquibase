@@ -4,12 +4,15 @@ import liquibase.database.Database;
 import liquibase.diff.compare.CompareControl;
 import liquibase.diff.compare.DatabaseObjectComparatorFactory;
 import liquibase.structure.DatabaseObject;
+import liquibase.structure.core.Column;
 import liquibase.structure.core.DataType;
 import liquibase.util.NumberUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+
+import static liquibase.diff.compare.core.DefaultDatabaseObjectComparator.compareObjectNames;
 
 public class ObjectDifferences {
 
@@ -248,30 +251,50 @@ public class ObjectDifferences {
                 }
             }
 
-            String object1Name;
-            if (referenceValue instanceof DatabaseObject) {
-                object1Name = accordingTo.correctObjectName(((DatabaseObject<?>) referenceValue).getAttribute("name", String.class), type);
-            } else {
-                object1Name = referenceValue.toString();
-            }
+            String object1Name = getObject1Name(referenceValue);
+            String object2Name = getObject1Name(compareToValue);
 
-            String object2Name;
-            if (compareToValue instanceof DatabaseObject) {
-                object2Name = accordingTo.correctObjectName(((DatabaseObject<?>) compareToValue).getAttribute("name", String.class), type);
-            } else {
-                object2Name = compareToValue.toString();
-            }
+            return compareObjectNames(accordingTo, object1Name, object2Name);
+        }
 
-            if ((object1Name == null) && (object2Name == null)) {
+        private String getObject1Name(Object objectValue) {
+            if (objectValue instanceof DatabaseObject) {
+                return accordingTo.correctObjectName(((DatabaseObject<?>) objectValue).getAttribute("name", String.class), type);
+            } else if (type.equals(Column.class)) {
+                return accordingTo.correctObjectName(objectValue.toString(), type);
+            }
+            return objectValue.toString();
+        }
+    }
+
+    public static class DataTypeCompareFunction implements CompareFunction {
+
+        private final Database accordingTo;
+
+        public DataTypeCompareFunction(Database accordingTo) {
+            this.accordingTo = accordingTo;
+        }
+
+        @Override
+        public boolean areEqual(Object referenceValue, Object compareToValue) {
+            if ((referenceValue == null) && (compareToValue == null)) {
                 return true;
             }
-            if ((object1Name == null) || (object2Name == null)) {
+            if ((referenceValue == null) || (compareToValue == null)) {
                 return false;
             }
-            if (accordingTo.isCaseSensitive()) {
-                return object1Name.equals(object2Name);
+
+            DataType referenceType = (DataType) referenceValue;
+            DataType compareToType = (DataType) compareToValue;
+
+            if (!referenceType.getTypeName().equalsIgnoreCase(compareToType.getTypeName())) {
+                return false;
+            }
+
+            if (compareToType.toString().contains("(") && referenceType.toString().contains("(")) {
+                return compareToType.toString().equalsIgnoreCase(referenceType.toString());
             } else {
-                return object1Name.equalsIgnoreCase(object2Name);
+                return true;
             }
         }
     }

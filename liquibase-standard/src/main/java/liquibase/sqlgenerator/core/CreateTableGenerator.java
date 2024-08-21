@@ -262,7 +262,7 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
                 buffer.append(" PRIMARY KEY (");
                 buffer.append(database.escapeColumnNameList(StringUtil.join(getPrimaryKeyColumns(statement.getPrimaryKeyConstraint().getColumns(), database, autoIncrementColumns), ", ")));
                 buffer.append(")");
-                // Setting up table space for PK's index if it exist
+                // Setting up table space for PK's index if it exists
                 if (((database instanceof OracleDatabase) || (database instanceof PostgresDatabase)) && (StringUtil.isNotEmpty(statement
                         .getPrimaryKeyConstraint().getTablespace()))) {
                     buffer.append(" USING INDEX TABLESPACE ");
@@ -403,6 +403,11 @@ public class CreateTableGenerator extends AbstractSqlGenerator<CreateTableStatem
         if ((database instanceof MySQLDatabase) && (statement.getRemarks() != null)) {
             sql += " COMMENT='" + database.escapeStringForDatabase(statement.getRemarks()) + "' ";
         }
+
+        if (database instanceof OracleDatabase && statement.isRowDependencies()) {
+            sql += " ROWDEPENDENCIES ";
+        }
+
         additionalSql.add(0, new UnparsedSql(sql, getAffectedTable(statement)));
         return additionalSql.toArray(EMPTY_SQL);
     }

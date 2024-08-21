@@ -12,7 +12,6 @@ import liquibase.diff.compare.DatabaseObjectComparatorFactory;
 import liquibase.exception.*;
 import liquibase.executor.ExecutorService;
 import liquibase.lockservice.LockServiceFactory;
-import liquibase.snapshot.SnapshotControl;
 import liquibase.sql.Sql;
 import liquibase.sql.visitor.SqlVisitor;
 import liquibase.sqlgenerator.SqlGeneratorFactory;
@@ -93,7 +92,7 @@ public abstract class AbstractJdbcDatabase implements Database {
     protected List<String> unmodifiableDataTypes = new ArrayList<>();
     protected BigInteger defaultAutoIncrementStartWith = BigInteger.ONE;
     protected BigInteger defaultAutoIncrementBy = BigInteger.ONE;
-    // most databases either lowercase or uppercase unuqoted objects such as table and column names.
+    // most databases either lowercase or uppercase unquoted objects such as table and column names.
     protected Boolean unquotedObjectsAreUppercased;
     // whether object names should be quoted
     protected ObjectQuotingStrategy quotingStrategy = ObjectQuotingStrategy.LEGACY;
@@ -166,6 +165,16 @@ public abstract class AbstractJdbcDatabase implements Database {
     @Override
     public boolean getAutoCommitMode() {
         return !supportsDDLInTransaction();
+    }
+
+    /**
+     * Used for TEST only
+     *
+     * @param previousAutoCommit
+     *
+     */
+    public void setPreviousAutoCommit(Boolean previousAutoCommit) {
+        this.previousAutoCommit = previousAutoCommit;
     }
 
     @Override
@@ -731,7 +740,7 @@ public abstract class AbstractJdbcDatabase implements Database {
         if (caseSensitive == null) {
             return false;
         } else {
-            return caseSensitive.booleanValue();
+            return caseSensitive;
         }
     }
 
@@ -1123,13 +1132,17 @@ public abstract class AbstractJdbcDatabase implements Database {
 
     @Override
     public void close() throws DatabaseException {
+        boolean tryingToSetAutoCommit = false;
         Scope.getCurrentScope().getSingleton(ExecutorService.class).clearExecutor("jdbc", this);
-        try (final DatabaseConnection connection = getConnection()) {
-            if (connection != null && previousAutoCommit != null) {
-                connection.setAutoCommit(previousAutoCommit);
+        try (final DatabaseConnection localConnection = getConnection()) {
+            if (localConnection != null && previousAutoCommit != null) {
+                tryingToSetAutoCommit = true;
+                localConnection.setAutoCommit(previousAutoCommit);
             }
         } catch (final DatabaseException e) {
-            Scope.getCurrentScope().getLog(getClass()).warning("Failed to restore the auto commit to " + previousAutoCommit);
+            if (tryingToSetAutoCommit) {
+                Scope.getCurrentScope().getLog(getClass()).warning("Failed to restore the auto commit to " + previousAutoCommit);
+            }
             throw e;
         }
     }

@@ -167,6 +167,12 @@ public class ChangeSet implements Conditional, ChangeLogChild {
     private Set<String> dbmsSet;
 
     /**
+     * The original string used in the dbms attribute.
+     */
+    @Getter
+    private String dbmsOriginalString;
+
+    /**
      * If false, do not stop liquibase update execution if an error is thrown executing the changeSet.  Defaults to true
      */
     private Boolean failOnError;
@@ -233,7 +239,7 @@ public class ChangeSet implements Conditional, ChangeLogChild {
     private String created;
 
     /**
-     * Allow changeSet to be ran "first" or "last". Multiple changeSets with the same runOrder will preserve their order relative to each other.
+     * Allow changeSet to be run "first" or "last". Multiple changeSets with the same runOrder will preserve their order relative to each other.
      */
     @Getter
     private String runOrder;
@@ -317,6 +323,7 @@ public class ChangeSet implements Conditional, ChangeLogChild {
 
     protected void setDbms(String dbmsList) {
         this.dbmsSet = DatabaseList.toDbmsSet(dbmsList);
+        this.dbmsOriginalString = dbmsList;
     }
 
     /**
@@ -524,6 +531,7 @@ public class ChangeSet implements Conditional, ChangeLogChild {
 
 
                 break;
+            case "preconditions":
             case "preConditions":
                 this.preconditions = new PreconditionContainer();
                 this.preconditions.load(child, resourceAccessor);
@@ -1038,6 +1046,7 @@ public class ChangeSet implements Conditional, ChangeLogChild {
     /**
      * @deprecated use {@link #getContextFilter()}
      */
+    @Deprecated
     public ContextExpression getContexts() {
         return getContextFilter();
     }
@@ -1045,6 +1054,7 @@ public class ChangeSet implements Conditional, ChangeLogChild {
     /**
      * @deprecated use {@link #setContextFilter(ContextExpression)}
      */
+    @Deprecated
     public ChangeSet setContexts(ContextExpression contexts) {
         return setContextFilter(contexts);
     }

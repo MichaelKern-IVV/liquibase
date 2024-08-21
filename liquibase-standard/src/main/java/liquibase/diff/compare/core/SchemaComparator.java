@@ -13,7 +13,7 @@ import liquibase.structure.core.Schema;
 
 import java.util.Set;
 
-public class SchemaComparator extends CommonCatalogSchemaComparator {
+public class SchemaComparator extends CommonCatalogSchemaComparator<Schema> {
     @Override
     public int getPriority(Class<? extends DatabaseObject> objectType, Database database) {
         if (Schema.class.isAssignableFrom(objectType)) {
@@ -23,15 +23,12 @@ public class SchemaComparator extends CommonCatalogSchemaComparator {
     }
 
     @Override
-    public String[] hash(DatabaseObject databaseObject, Database accordingTo, DatabaseObjectComparatorChain chain) {
+    public String[] hash(Schema databaseObject, Database accordingTo, DatabaseObjectComparatorChain<Schema> chain) {
         return null;
     }
 
     @Override
-    public boolean isSameObject(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, DatabaseObjectComparatorChain chain) {
-        if (!((databaseObject1 instanceof Schema) && (databaseObject2 instanceof Schema))) {
-            return false;
-        }
+    public boolean isSameObject(Schema databaseObject1, Schema databaseObject2, Database accordingTo, DatabaseObjectComparatorChain<Schema> chain) {
 
         String schemaName1 = null;
         String schemaName2 = null;
@@ -122,7 +119,7 @@ public class SchemaComparator extends CommonCatalogSchemaComparator {
     }
 
     @Override
-    public ObjectDifferences findDifferences(DatabaseObject databaseObject1, DatabaseObject databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain chain, Set<String> exclude) {
+    public ObjectDifferences findDifferences(Schema databaseObject1, Schema databaseObject2, Database accordingTo, CompareControl compareControl, DatabaseObjectComparatorChain<Schema> chain, Set<String> exclude) {
         ObjectDifferences differences = new ObjectDifferences(compareControl);
         differences.compare("name", databaseObject1, databaseObject2, new ObjectDifferences.DatabaseObjectNameCompareFunction(Schema.class, accordingTo));
 

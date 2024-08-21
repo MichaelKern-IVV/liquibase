@@ -70,7 +70,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 public abstract class AbstractLiquibaseMojo extends AbstractMojo {
 
     /**
-     * Suffix for fields that are representing a default value for a another field.
+     * Suffix for fields that are representing a default value for another field.
      */
     private static final String DEFAULT_FIELD_SUFFIX = "Default";
 
@@ -145,6 +145,7 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
      * @parameter property="liquibase.emptyPassword" default-value="false"
      * @deprecated Use an empty or null value for the password instead.
      */
+    @Deprecated
     @PropertyElement
     protected boolean emptyPassword;
     /**
@@ -201,6 +202,7 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
      * @deprecated No longer prompts
      */
     @PropertyElement
+    @Deprecated
     protected boolean promptOnNonLocalDatabase;
 
     /**
@@ -236,6 +238,7 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
      * @deprecated Logging managed by maven
      */
     @PropertyElement
+    @Deprecated
     protected String logging;
 
     /**
@@ -711,6 +714,15 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
     @PropertyElement(key = "liquibase.databaseChangelogHistory.captureExtensions")
     protected Boolean databaseChangelogHistoryCaptureExtensions;
 
+
+    /**
+     * When set to true, this global property prevents DBCL and DBCLH sql from being present in console and logs during *-sql commands, such as update-sql, rollback-sql, etc.
+     *
+     * @parameter property = "liquibase.suppressLiquibaseSql"
+     */
+    @PropertyElement(key =  "liquibase.suppressLiquibaseSql")
+    protected Boolean suppressLiquibaseSql;
+
     protected String commandName;
     protected DefaultChangeExecListener defaultChangeExecListener;
     private static final ResourceBundle coreBundle = getBundle("liquibase/i18n/liquibase-core");
@@ -979,6 +991,7 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
                         innerScopeValues.put("liquibase.dbclhistory.enabled", isDbclHistoryEnabled());
                         innerScopeValues.put("liquibase.dbclhistory.captureSql", isDbclHistoryCaptureSql());
                         innerScopeValues.put("liquibase.dbclhistory.captureExtensions", isDbclHistoryCaptureExtensions());
+                        innerScopeValues.put(LiquibaseCommandLineConfiguration.SUPPRESS_LIQUIBASE_SQL.getKey(), suppressLiquibaseSql);
                         Scope.child(innerScopeValues, () -> performLiquibaseTask(liquibase));
                     } catch (LiquibaseException e) {
                         cleanup(database);
@@ -1356,10 +1369,9 @@ public abstract class AbstractLiquibaseMojo extends AbstractMojo {
             systemProperties = new Properties();
         }
         // Add all system properties configured by the user
-        Iterator<Object> iter = systemProperties.keySet().iterator();
-        while (iter.hasNext()) {
-            String key = (String) iter.next();
-            String value = systemProperties.getProperty(key);
+        for (Map.Entry<?, ?> entry : systemProperties.entrySet()) {
+            String key = (String) entry.getKey();
+            String value = (String) entry.getValue();
             System.setProperty(key, value);
         }
     }

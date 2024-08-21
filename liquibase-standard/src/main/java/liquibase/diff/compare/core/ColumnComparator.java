@@ -77,7 +77,7 @@ public class ColumnComparator implements DatabaseObjectComparator<Column> {
         boolean autoIncrement1 = thisColumn.isAutoIncrement();
         boolean autoIncrement2 = thatColumn.isAutoIncrement();
 
-        if (autoIncrement1 != autoIncrement2 && !compareControl.isSuppressedField(Column.class, "autoIncrementInformation")) { //only compare if autoIncrement or not since there are sometimes expected differences in start/increment/etc value.
+        if (autoIncrement1 != autoIncrement2 && !compareControl.isSuppressedField(Column.class, "autoIncrementInformation")) { //only compare if autoIncrement or not since there are sometimes expected differences in start/increment/etc. value.
             differences.addDifference("autoIncrement", autoIncrement1, autoIncrement2);
         }
         if (accordingTo instanceof PostgresDatabase && autoIncrement1 && autoIncrement2) {

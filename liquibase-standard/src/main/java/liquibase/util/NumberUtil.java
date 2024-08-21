@@ -15,6 +15,7 @@ public abstract class NumberUtil {
      *
      * @deprecated use {@link ObjectUtil#convert(Object, Class)}
      */
+    @Deprecated
     public static Number convertNumberToTargetClass(Number number, Class<Number> targetClass) throws IllegalArgumentException {
         return ObjectUtil.convert(number, targetClass);
     }
