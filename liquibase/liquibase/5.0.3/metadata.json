@@ -1,7 +1,7 @@
 {
   "scannedAt": "2026-05-18T13:47:27Z",
   "image": "liquibase/liquibase",
-  "tag": "5.0.2",
+  "tag": "5.0.3",
   "status": "success",
   "missing_files": [
   "grype-results.json"
