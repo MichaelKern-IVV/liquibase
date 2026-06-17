@@ -1,10 +1,10 @@
 {
-  "scannedAt": "2026-06-16T15:06:40Z",
+  "scannedAt": "2026-06-17T13:43:12Z",
   "image": "liquibase/liquibase",
   "tag": "4.29.2",
   "status": "success",
   "missing_files": [
   "grype-results.json"
 ],
-  "workflowRunId": "27627112041"
+  "workflowRunId": "27693197906"
 }
