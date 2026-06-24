@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "019ef477-e612-7bd9-a6f5-a01c5a5075f5",
-  "CreatedAt": "2026-06-23T12:32:38.930777667Z",
+  "ReportID": "019ef992-161f-7860-98bb-e73704bbe5ea",
+  "CreatedAt": "2026-06-24T12:19:21.247550998Z",
   "ArtifactName": "/tmp/extracted-deps",
   "ArtifactType": "filesystem",
   "Results": [
@@ -426,6 +426,102 @@
       ],
       "Vulnerabilities": [
         {
+          "VulnerabilityID": "CVE-2026-54512",
+          "VendorIDs": [
+            "GHSA-j3rv-43j4-c7qm"
+          ],
+          "PkgName": "com.fasterxml.jackson.core:jackson-databind",
+          "PkgPath": "internal-jars/lib/liquibase-commercial.jar",
+          "PkgIdentifier": {
+            "PURL": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.3",
+            "UID": "99c3171647dc05d3"
+          },
+          "InstalledVersion": "2.18.3",
+          "FixedVersion": "2.18.8, 3.1.4, 2.21.4",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54512",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Maven",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Amaven"
+          },
+          "Fingerprint": "sha256:39b0a3dba775a8ccb429603676a641f295d5b71da6a866dab369779511268ff9",
+          "Title": "jackson-databind has a PolymorphicTypeValidator bypass via generic type parameters that allows arbitrary class instantiation",
+          "Description": "jackson-databind contains the general-purpose data-binding functionality and tree-model for Jackson Data Processor. From 2.10.0 until 2.18.8, 2.21.4, and 3.1.4, jackson-databind's PolymorphicTypeValidator (PTV) is the primary safety mechanism guarding polymorphic deserialization. When polymorphic typing is enabled and a type identifier contains generic parameters (i.e. the type ID string contains \u003c), DatabindContext._resolveAndValidateGeneric() validates only the raw container class name (the substring before \u003c) against the configured PTV. If the container type is approved, the method parses the full canonical type string via TypeFactory.constructFromCanonical() and returns the fully parameterized type without ever validating the nested type arguments against the PTV. The nested type arguments are then resolved, instantiated, and populated as beans during deserialization. An attacker who controls the type ID can therefore place a denied class as a generic type parameter of an allowed container — for example java.util.ArrayList\u003ccom.evil.Gadget\u003e when only java.util.ArrayList is allow-listed. The container passes the PTV check; com.evil.Gadget is loaded via Class.forName(name, true, loader), instantiated, and its properties are set from attacker-controlled JSON. This completely bypasses an explicitly configured PTV allow-list. This vulnerability is fixed in 2.18.8, 2.21.4, and 3.1.4.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-184",
+            "CWE-502"
+          ],
+          "VendorSeverity": {
+            "ghsa": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.1
+            }
+          },
+          "References": [
+            "https://github.com/FasterXML/jackson-databind",
+            "https://github.com/FasterXML/jackson-databind/commit/434d6c511de7fdd9872f29157aafb6162d12d8d5",
+            "https://github.com/FasterXML/jackson-databind/issues/5988",
+            "https://github.com/FasterXML/jackson-databind/security/advisories/GHSA-j3rv-43j4-c7qm"
+          ],
+          "PublishedDate": "2026-06-23T21:17:02.203Z",
+          "LastModifiedDate": "2026-06-23T21:17:02.203Z"
+        },
+        {
+          "VulnerabilityID": "CVE-2026-54513",
+          "VendorIDs": [
+            "GHSA-rmj7-2vxq-3g9f"
+          ],
+          "PkgName": "com.fasterxml.jackson.core:jackson-databind",
+          "PkgPath": "internal-jars/lib/liquibase-commercial.jar",
+          "PkgIdentifier": {
+            "PURL": "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.18.3",
+            "UID": "99c3171647dc05d3"
+          },
+          "InstalledVersion": "2.18.3",
+          "FixedVersion": "2.18.8, 2.21.4, 3.1.4",
+          "Status": "fixed",
+          "SeveritySource": "ghsa",
+          "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2026-54513",
+          "DataSource": {
+            "ID": "ghsa",
+            "Name": "GitHub Security Advisory Maven",
+            "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Amaven"
+          },
+          "Fingerprint": "sha256:93f63cf417ffd892069be4d4ffcc8bb757f0e2725b11d8fd0a2af6e471fc3102",
+          "Title": "jackson-databind has an array subtype allowlist bypass in BasicPolymorphicTypeValidator (allowIfSubTypeIsArray)",
+          "Description": "jackson-databind contains the general-purpose data-binding functionality and tree-model for Jackson Data Processor. From 2.10.0 until 2.18.8, 2.21.4, and 3.1.4, BasicPolymorphicTypeValidator.Builder.allowIfSubTypeIsArray() allowlists any array type based only on clazz.isArray(), without validating the array's component (element) type against the configured allowlist. A PTV built with allowIfSubTypeIsArray() plus an explicit concrete-type allowlist therefore still permits EvilType[] even though EvilType is not allowlisted. When Jackson deserializes the elements and no per-element type IDs are present, it instantiates the component type directly with no further PTV check, bypassing the allowlist. This vulnerability is fixed in 2.18.8, 2.21.4, and 3.1.4.",
+          "Severity": "HIGH",
+          "CweIDs": [
+            "CWE-184"
+          ],
+          "VendorSeverity": {
+            "ghsa": 3
+          },
+          "CVSS": {
+            "ghsa": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.1
+            }
+          },
+          "References": [
+            "https://github.com/FasterXML/jackson-databind",
+            "https://github.com/FasterXML/jackson-databind/commit/01d1692c8d0ed03e51a0e3c4f8a9e6908e4931e5",
+            "https://github.com/FasterXML/jackson-databind/commit/24529da29fdf46ff94ca38de9ebf31cd188f5e8e",
+            "https://github.com/FasterXML/jackson-databind/issues/5981",
+            "https://github.com/FasterXML/jackson-databind/issues/5983",
+            "https://github.com/FasterXML/jackson-databind/pull/5984",
+            "https://github.com/FasterXML/jackson-databind/security/advisories/GHSA-rmj7-2vxq-3g9f"
+          ],
+          "PublishedDate": "2026-06-23T21:17:02.333Z",
+          "LastModifiedDate": "2026-06-23T21:17:02.333Z"
+        },
+        {
           "VulnerabilityID": "CVE-2025-49146",
           "VendorIDs": [
             "GHSA-hq9p-pm7w-8p54"
@@ -489,7 +585,7 @@
             "https://www.postgresql.org/docs/current/sasl-authentication.html#SASL-SCRAM-SHA-256"
           ],
           "PublishedDate": "2025-06-11T15:15:42.85Z",
-          "LastModifiedDate": "2025-10-06T19:29:58.977Z"
+          "LastModifiedDate": "2026-06-17T09:30:49.57Z"
         },
         {
           "VulnerabilityID": "CVE-2026-42198",
@@ -558,7 +654,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-42198"
           ],
           "PublishedDate": "2026-04-29T16:16:25.427Z",
-          "LastModifiedDate": "2026-05-01T12:51:20.853Z"
+          "LastModifiedDate": "2026-06-17T10:47:30.097Z"
         }
       ]
     },
@@ -878,7 +974,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2022-40897"
           ],
           "PublishedDate": "2022-12-23T00:15:13.987Z",
-          "LastModifiedDate": "2025-11-04T16:15:52.26Z"
+          "LastModifiedDate": "2026-06-17T05:02:12.993Z"
         },
         {
           "VulnerabilityID": "CVE-2022-40897",
@@ -978,7 +1074,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2022-40897"
           ],
           "PublishedDate": "2022-12-23T00:15:13.987Z",
-          "LastModifiedDate": "2025-11-04T16:15:52.26Z"
+          "LastModifiedDate": "2026-06-17T05:02:12.993Z"
         },
         {
           "VulnerabilityID": "CVE-2022-40897",
@@ -1078,7 +1174,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2022-40897"
           ],
           "PublishedDate": "2022-12-23T00:15:13.987Z",
-          "LastModifiedDate": "2025-11-04T16:15:52.26Z"
+          "LastModifiedDate": "2026-06-17T05:02:12.993Z"
         },
         {
           "VulnerabilityID": "CVE-2024-6345",
@@ -1158,7 +1254,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-6345"
           ],
           "PublishedDate": "2024-07-15T01:15:01.73Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:17:49.463Z"
         },
         {
           "VulnerabilityID": "CVE-2024-6345",
@@ -1238,7 +1334,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-6345"
           ],
           "PublishedDate": "2024-07-15T01:15:01.73Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:17:49.463Z"
         },
         {
           "VulnerabilityID": "CVE-2024-6345",
@@ -1318,7 +1414,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-6345"
           ],
           "PublishedDate": "2024-07-15T01:15:01.73Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:17:49.463Z"
         },
         {
           "VulnerabilityID": "CVE-2025-47273",
@@ -1380,12 +1476,12 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2025:13578",
+            "https://access.redhat.com/errata/RHSA-2025:9940",
             "https://access.redhat.com/security/cve/CVE-2025-47273",
             "https://bugzilla.redhat.com/2366982",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2366982",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273",
-            "https://errata.almalinux.org/9/ALSA-2025-13578.html",
+            "https://errata.almalinux.org/10/ALSA-2025-9940.html",
             "https://errata.rockylinux.org/RLSA-2025:10407",
             "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml",
             "https://github.com/pypa/setuptools",
@@ -1402,7 +1498,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2025-47273"
           ],
           "PublishedDate": "2025-05-17T16:15:19.11Z",
-          "LastModifiedDate": "2025-06-12T16:29:01.66Z"
+          "LastModifiedDate": "2026-06-17T09:27:38.827Z"
         },
         {
           "VulnerabilityID": "CVE-2025-47273",
@@ -1464,12 +1560,12 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2025:13578",
+            "https://access.redhat.com/errata/RHSA-2025:9940",
             "https://access.redhat.com/security/cve/CVE-2025-47273",
             "https://bugzilla.redhat.com/2366982",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2366982",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273",
-            "https://errata.almalinux.org/9/ALSA-2025-13578.html",
+            "https://errata.almalinux.org/10/ALSA-2025-9940.html",
             "https://errata.rockylinux.org/RLSA-2025:10407",
             "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml",
             "https://github.com/pypa/setuptools",
@@ -1486,7 +1582,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2025-47273"
           ],
           "PublishedDate": "2025-05-17T16:15:19.11Z",
-          "LastModifiedDate": "2025-06-12T16:29:01.66Z"
+          "LastModifiedDate": "2026-06-17T09:27:38.827Z"
         },
         {
           "VulnerabilityID": "CVE-2025-47273",
@@ -1548,12 +1644,12 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2025:13578",
+            "https://access.redhat.com/errata/RHSA-2025:9940",
             "https://access.redhat.com/security/cve/CVE-2025-47273",
             "https://bugzilla.redhat.com/2366982",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2366982",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-47273",
-            "https://errata.almalinux.org/9/ALSA-2025-13578.html",
+            "https://errata.almalinux.org/10/ALSA-2025-9940.html",
             "https://errata.rockylinux.org/RLSA-2025:10407",
             "https://github.com/pypa/advisory-database/tree/main/vulns/setuptools/PYSEC-2025-49.yaml",
             "https://github.com/pypa/setuptools",
@@ -1570,7 +1666,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2025-47273"
           ],
           "PublishedDate": "2025-05-17T16:15:19.11Z",
-          "LastModifiedDate": "2025-06-12T16:29:01.66Z"
+          "LastModifiedDate": "2026-06-17T09:27:38.827Z"
         },
         {
           "VulnerabilityID": "CVE-2024-4340",
@@ -1629,7 +1725,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-4340"
           ],
           "PublishedDate": "2024-04-30T15:15:53.407Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:01:42.383Z"
         },
         {
           "VulnerabilityID": "CVE-2024-4340",
@@ -1688,7 +1784,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-4340"
           ],
           "PublishedDate": "2024-04-30T15:15:53.407Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:01:42.383Z"
         },
         {
           "VulnerabilityID": "CVE-2024-4340",
@@ -1747,7 +1843,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2024-4340"
           ],
           "PublishedDate": "2024-04-30T15:15:53.407Z",
-          "LastModifiedDate": "2026-04-15T00:35:42.02Z"
+          "LastModifiedDate": "2026-06-17T08:01:42.383Z"
         },
         {
           "VulnerabilityID": "CVE-2023-43804",
@@ -1846,7 +1942,7 @@
             "https://www.vicarius.io/vsociety/posts/cve-2023-43804-urllib3-vulnerability-3"
           ],
           "PublishedDate": "2023-10-04T17:15:10.163Z",
-          "LastModifiedDate": "2025-11-03T22:16:27.767Z"
+          "LastModifiedDate": "2026-06-17T06:26:29.04Z"
         },
         {
           "VulnerabilityID": "CVE-2023-43804",
@@ -1945,7 +2041,7 @@
             "https://www.vicarius.io/vsociety/posts/cve-2023-43804-urllib3-vulnerability-3"
           ],
           "PublishedDate": "2023-10-04T17:15:10.163Z",
-          "LastModifiedDate": "2025-11-03T22:16:27.767Z"
+          "LastModifiedDate": "2026-06-17T06:26:29.04Z"
         },
         {
           "VulnerabilityID": "CVE-2023-43804",
@@ -2044,7 +2140,7 @@
             "https://www.vicarius.io/vsociety/posts/cve-2023-43804-urllib3-vulnerability-3"
           ],
           "PublishedDate": "2023-10-04T17:15:10.163Z",
-          "LastModifiedDate": "2025-11-03T22:16:27.767Z"
+          "LastModifiedDate": "2026-06-17T06:26:29.04Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66418",
@@ -2102,7 +2198,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66418",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2113,7 +2209,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/24d7b67eac89f94e11003424bcf0d8f7b72222a8",
@@ -2128,7 +2224,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T16:15:51.053Z",
-          "LastModifiedDate": "2025-12-10T16:08:32.193Z"
+          "LastModifiedDate": "2026-06-17T09:56:48.383Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66418",
@@ -2186,7 +2282,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66418",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2197,7 +2293,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/24d7b67eac89f94e11003424bcf0d8f7b72222a8",
@@ -2212,7 +2308,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T16:15:51.053Z",
-          "LastModifiedDate": "2025-12-10T16:08:32.193Z"
+          "LastModifiedDate": "2026-06-17T09:56:48.383Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66418",
@@ -2270,7 +2366,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66418",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2281,7 +2377,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/24d7b67eac89f94e11003424bcf0d8f7b72222a8",
@@ -2296,7 +2392,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T16:15:51.053Z",
-          "LastModifiedDate": "2025-12-10T16:08:32.193Z"
+          "LastModifiedDate": "2026-06-17T09:56:48.383Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66471",
@@ -2354,7 +2450,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66471",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2365,7 +2461,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/c19571de34c47de3a766541b041637ba5f716ed7",
@@ -2383,7 +2479,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T17:16:04.4Z",
-          "LastModifiedDate": "2025-12-10T16:10:33.5Z"
+          "LastModifiedDate": "2026-06-17T09:56:53.65Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66471",
@@ -2441,7 +2537,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66471",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2452,7 +2548,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/c19571de34c47de3a766541b041637ba5f716ed7",
@@ -2470,7 +2566,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T17:16:04.4Z",
-          "LastModifiedDate": "2025-12-10T16:10:33.5Z"
+          "LastModifiedDate": "2026-06-17T09:56:53.65Z"
         },
         {
           "VulnerabilityID": "CVE-2025-66471",
@@ -2528,7 +2624,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2025-66471",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2539,7 +2635,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/c19571de34c47de3a766541b041637ba5f716ed7",
@@ -2557,7 +2653,7 @@
             "https://www.openwall.com/lists/oss-security/2025/12/05/4"
           ],
           "PublishedDate": "2025-12-05T17:16:04.4Z",
-          "LastModifiedDate": "2025-12-10T16:10:33.5Z"
+          "LastModifiedDate": "2026-06-17T09:56:53.65Z"
         },
         {
           "VulnerabilityID": "CVE-2026-21441",
@@ -2617,7 +2713,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2026-21441",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2628,7 +2724,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/8864ac407bba8607950025e0979c4c69bc7abc7b",
@@ -2643,7 +2739,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-01-23T09:15:47.823Z"
+          "LastModifiedDate": "2026-06-17T10:18:40.75Z"
         },
         {
           "VulnerabilityID": "CVE-2026-21441",
@@ -2703,7 +2799,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2026-21441",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2714,7 +2810,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/8864ac407bba8607950025e0979c4c69bc7abc7b",
@@ -2729,7 +2825,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-01-23T09:15:47.823Z"
+          "LastModifiedDate": "2026-06-17T10:18:40.75Z"
         },
         {
           "VulnerabilityID": "CVE-2026-21441",
@@ -2789,7 +2885,7 @@
             }
           },
           "References": [
-            "https://access.redhat.com/errata/RHSA-2026:1239",
+            "https://access.redhat.com/errata/RHSA-2026:1086",
             "https://access.redhat.com/security/cve/CVE-2026-21441",
             "https://bugzilla.redhat.com/2419455",
             "https://bugzilla.redhat.com/2419467",
@@ -2800,7 +2896,7 @@
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66418",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-66471",
             "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-21441",
-            "https://errata.almalinux.org/9/ALSA-2026-1239.html",
+            "https://errata.almalinux.org/10/ALSA-2026-1086.html",
             "https://errata.rockylinux.org/RLSA-2026:1087",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/commit/8864ac407bba8607950025e0979c4c69bc7abc7b",
@@ -2815,7 +2911,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-01-23T09:15:47.823Z"
+          "LastModifiedDate": "2026-06-17T10:18:40.75Z"
         },
         {
           "VulnerabilityID": "CVE-2026-44431",
@@ -2846,6 +2942,8 @@
             "CWE-200"
           ],
           "VendorSeverity": {
+            "alma": 3,
+            "amazon": 2,
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
@@ -2869,7 +2967,11 @@
             }
           },
           "References": [
+            "https://access.redhat.com/errata/RHSA-2026:28000",
             "https://access.redhat.com/security/cve/CVE-2026-44431",
+            "https://bugzilla.redhat.com/2477154",
+            "https://bugzilla.redhat.com/2477167",
+            "https://errata.almalinux.org/10/ALSA-2026-28000.html",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
@@ -2877,7 +2979,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-44431"
           ],
           "PublishedDate": "2026-05-13T16:16:57.15Z",
-          "LastModifiedDate": "2026-05-14T13:56:27.263Z"
+          "LastModifiedDate": "2026-06-17T10:50:38.253Z"
         },
         {
           "VulnerabilityID": "CVE-2026-44431",
@@ -2908,6 +3010,8 @@
             "CWE-200"
           ],
           "VendorSeverity": {
+            "alma": 3,
+            "amazon": 2,
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
@@ -2931,7 +3035,11 @@
             }
           },
           "References": [
+            "https://access.redhat.com/errata/RHSA-2026:28000",
             "https://access.redhat.com/security/cve/CVE-2026-44431",
+            "https://bugzilla.redhat.com/2477154",
+            "https://bugzilla.redhat.com/2477167",
+            "https://errata.almalinux.org/10/ALSA-2026-28000.html",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
@@ -2939,7 +3047,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-44431"
           ],
           "PublishedDate": "2026-05-13T16:16:57.15Z",
-          "LastModifiedDate": "2026-05-14T13:56:27.263Z"
+          "LastModifiedDate": "2026-06-17T10:50:38.253Z"
         },
         {
           "VulnerabilityID": "CVE-2026-44431",
@@ -2970,6 +3078,8 @@
             "CWE-200"
           ],
           "VendorSeverity": {
+            "alma": 3,
+            "amazon": 2,
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
@@ -2993,7 +3103,11 @@
             }
           },
           "References": [
+            "https://access.redhat.com/errata/RHSA-2026:28000",
             "https://access.redhat.com/security/cve/CVE-2026-44431",
+            "https://bugzilla.redhat.com/2477154",
+            "https://bugzilla.redhat.com/2477167",
+            "https://errata.almalinux.org/10/ALSA-2026-28000.html",
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
@@ -3001,7 +3115,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-44431"
           ],
           "PublishedDate": "2026-05-13T16:16:57.15Z",
-          "LastModifiedDate": "2026-05-14T13:56:27.263Z"
+          "LastModifiedDate": "2026-06-17T10:50:38.253Z"
         }
       ]
     }
