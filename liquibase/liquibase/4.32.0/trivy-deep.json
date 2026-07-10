@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "019f418d-c7fc-7385-bd7e-5a50f91a3dae",
-  "CreatedAt": "2026-07-08T11:47:18.652232041Z",
+  "ReportID": "019f4bfd-f9b3-79a2-b303-cd2c11e802c8",
+  "CreatedAt": "2026-07-10T12:26:03.571632727Z",
   "ArtifactName": "/tmp/extracted-deps",
   "ArtifactType": "filesystem",
   "Results": [
@@ -523,6 +523,7 @@
             }
           },
           "References": [
+            "https://access.redhat.com/errata/RHSA-2026:36839",
             "https://access.redhat.com/security/cve/CVE-2026-54513",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2492010",
             "https://github.com/FasterXML/jackson-databind",
@@ -537,7 +538,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-54513"
           ],
           "PublishedDate": "2026-06-23T21:17:02.333Z",
-          "LastModifiedDate": "2026-07-03T13:17:29.627Z"
+          "LastModifiedDate": "2026-07-09T13:17:29.703Z"
         },
         {
           "VulnerabilityID": "CVE-2025-49146",
@@ -3287,7 +3288,7 @@
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
-            "oracle-oval": 3,
+            "oracle-oval": 2,
             "redhat": 2,
             "rocky": 3,
             "ubuntu": 2
@@ -3322,7 +3323,7 @@
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://linux.oracle.com/cve/CVE-2026-44431.html",
-            "https://linux.oracle.com/errata/ELSA-2026-32992.html",
+            "https://linux.oracle.com/errata/ELSA-2026-36732.html",
             "https://lists.debian.org/debian-lts-announce/2026/06/msg00040.html",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
             "https://ubuntu.com/security/notices/USN-8379-1",
@@ -3365,7 +3366,7 @@
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
-            "oracle-oval": 3,
+            "oracle-oval": 2,
             "redhat": 2,
             "rocky": 3,
             "ubuntu": 2
@@ -3400,7 +3401,7 @@
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://linux.oracle.com/cve/CVE-2026-44431.html",
-            "https://linux.oracle.com/errata/ELSA-2026-32992.html",
+            "https://linux.oracle.com/errata/ELSA-2026-36732.html",
             "https://lists.debian.org/debian-lts-announce/2026/06/msg00040.html",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
             "https://ubuntu.com/security/notices/USN-8379-1",
@@ -3443,7 +3444,7 @@
             "azure": 3,
             "ghsa": 3,
             "nvd": 2,
-            "oracle-oval": 3,
+            "oracle-oval": 2,
             "redhat": 2,
             "rocky": 3,
             "ubuntu": 2
@@ -3478,7 +3479,7 @@
             "https://github.com/urllib3/urllib3",
             "https://github.com/urllib3/urllib3/security/advisories/GHSA-qccp-gfcp-xxvc",
             "https://linux.oracle.com/cve/CVE-2026-44431.html",
-            "https://linux.oracle.com/errata/ELSA-2026-32992.html",
+            "https://linux.oracle.com/errata/ELSA-2026-36732.html",
             "https://lists.debian.org/debian-lts-announce/2026/06/msg00040.html",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-44431",
             "https://ubuntu.com/security/notices/USN-8379-1",
