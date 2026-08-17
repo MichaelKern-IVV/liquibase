@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "019fffea-a003-7806-b172-233b29c2e01f",
-  "CreatedAt": "2026-08-14T10:56:34.307527193Z",
+  "ReportID": "01a00f45-b4c3-7b29-856d-5bee3ce1844b",
+  "CreatedAt": "2026-08-17T10:30:21.635732953Z",
   "ArtifactName": "/tmp/extracted-deps",
   "ArtifactType": "filesystem",
   "Results": [
@@ -568,6 +568,7 @@
             "https://access.redhat.com/errata/RHSA-2026:52929",
             "https://access.redhat.com/errata/RHSA-2026:52930",
             "https://access.redhat.com/errata/RHSA-2026:52978",
+            "https://access.redhat.com/errata/RHSA-2026:54532",
             "https://access.redhat.com/security/cve/CVE-2026-42198",
             "https://bugzilla.redhat.com/2463857",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2463857",
@@ -585,7 +586,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-42198"
           ],
           "PublishedDate": "2026-04-29T16:16:25.427Z",
-          "LastModifiedDate": "2026-08-11T13:18:50.84Z"
+          "LastModifiedDate": "2026-08-14T13:18:44.633Z"
         }
       ]
     }
