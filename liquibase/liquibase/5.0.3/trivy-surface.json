@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "01a01eb5-f1f1-7db8-95a1-39c56199ca01",
-  "CreatedAt": "2026-08-20T10:27:15.569900544Z",
+  "ReportID": "01a023dc-63bf-797d-946f-4b61851e735a",
+  "CreatedAt": "2026-08-21T10:27:21.151623076Z",
   "ArtifactID": "sha256:ab06f77e82c54ce2f2a004f579c5c6b6c1689d650816b8124569f23747ebbd32",
   "ArtifactName": "liquibase/liquibase:5.0.3",
   "ArtifactType": "container_image",
@@ -11204,6 +11204,7 @@
             "https://access.redhat.com/errata/RHSA-2026:54603",
             "https://access.redhat.com/errata/RHSA-2026:54757",
             "https://access.redhat.com/errata/RHSA-2026:55899",
+            "https://access.redhat.com/errata/RHSA-2026:57194",
             "https://access.redhat.com/security/cve/CVE-2026-27145",
             "https://bugzilla.redhat.com/2445356",
             "https://bugzilla.redhat.com/2484207",
@@ -11225,7 +11226,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-27145"
           ],
           "PublishedDate": "2026-06-02T23:16:35.57Z",
-          "LastModifiedDate": "2026-08-19T12:17:39.17Z"
+          "LastModifiedDate": "2026-08-20T13:17:23.26Z"
         },
         {
           "VulnerabilityID": "CVE-2026-33818",
@@ -11448,6 +11449,7 @@
             "https://access.redhat.com/errata/RHSA-2026:56223",
             "https://access.redhat.com/errata/RHSA-2026:56340",
             "https://access.redhat.com/errata/RHSA-2026:56431",
+            "https://access.redhat.com/errata/RHSA-2026:57194",
             "https://access.redhat.com/security/cve/CVE-2026-39821",
             "https://bugzilla.redhat.com/2480756",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2480756",
@@ -11471,7 +11473,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-39821"
           ],
           "PublishedDate": "2026-05-22T16:16:20.41Z",
-          "LastModifiedDate": "2026-08-19T12:18:01.253Z"
+          "LastModifiedDate": "2026-08-20T13:18:12.15Z"
         },
         {
           "VulnerabilityID": "CVE-2026-39822",
