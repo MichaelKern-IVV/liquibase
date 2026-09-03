@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "01a06270-1cca-7d84-939a-e80fac54a0aa",
-  "CreatedAt": "2026-09-02T14:05:09.706887147Z",
+  "ReportID": "01a0679a-0fa4-7a0a-bf9f-6c8d5d152bf6",
+  "CreatedAt": "2026-09-03T14:09:04.932659797Z",
   "ArtifactName": "/tmp/extracted-deps",
   "ArtifactType": "filesystem",
   "Results": [
@@ -2704,7 +2704,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -2790,7 +2790,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -2876,7 +2876,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -2962,7 +2962,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -3051,7 +3051,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -3140,7 +3140,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "cbl-mariner": 3,
             "ghsa": 3,
@@ -3396,7 +3396,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-09-01T13:18:14.823Z"
+          "LastModifiedDate": "2026-09-02T13:17:07.95Z"
         },
         {
           "VulnerabilityID": "CVE-2026-21441",
@@ -3595,7 +3595,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-09-01T13:18:14.823Z"
+          "LastModifiedDate": "2026-09-02T13:17:07.95Z"
         },
         {
           "VulnerabilityID": "CVE-2026-21441",
@@ -3794,7 +3794,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-21441"
           ],
           "PublishedDate": "2026-01-07T22:15:44.04Z",
-          "LastModifiedDate": "2026-09-01T13:18:14.823Z"
+          "LastModifiedDate": "2026-09-02T13:17:07.95Z"
         },
         {
           "VulnerabilityID": "CVE-2026-44431",
