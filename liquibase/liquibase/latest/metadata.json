@@ -1,5 +1,5 @@
 {
-  "scannedAt": "2026-09-04T11:57:04Z",
+  "scannedAt": "2026-09-04T12:00:33Z",
   "image": "liquibase/liquibase",
   "tag": "latest",
   "status": "success",
@@ -8,5 +8,5 @@
   "trivy-deep.json",
   "grype-results.json"
 ],
-  "workflowRunId": "33870272724"
+  "workflowRunId": "33870527252"
 }
