@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.69.3"
   },
-  "ReportID": "01a0aaa8-6975-74e0-97bb-9ec30b4f267d",
-  "CreatedAt": "2026-09-16T14:39:18.901320671Z",
+  "ReportID": "01a0afd6-1878-74f4-a7bd-3fba5418f74a",
+  "CreatedAt": "2026-09-17T14:47:18.904326172Z",
   "ArtifactID": "sha256:4f53e6da347af47c6afa6b7269e33dd3d2bfaf5df12d318b2126b6887579420d",
   "ArtifactName": "liquibase/liquibase:4.15.0",
   "ArtifactType": "container_image",
@@ -14671,7 +14671,7 @@
           "Severity": "HIGH",
           "VendorSeverity": {
             "alma": 2,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "bitnami": 3,
             "cbl-mariner": 3,
@@ -16669,7 +16669,7 @@
           ],
           "VendorSeverity": {
             "alma": 2,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 3,
             "bitnami": 3,
             "cbl-mariner": 3,
@@ -17648,7 +17648,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 2,
+            "amazon": 3,
             "azure": 2,
             "bitnami": 3,
             "cbl-mariner": 2,
@@ -18085,7 +18085,7 @@
           ],
           "VendorSeverity": {
             "alma": 3,
-            "amazon": 3,
+            "amazon": 2,
             "azure": 3,
             "bitnami": 3,
             "oracle-oval": 3,
@@ -18827,7 +18827,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-32280"
           ],
           "PublishedDate": "2026-04-08T02:16:03.247Z",
-          "LastModifiedDate": "2026-09-15T12:17:13.753Z"
+          "LastModifiedDate": "2026-09-16T13:17:31.12Z"
         },
         {
           "VulnerabilityID": "CVE-2026-32281",
@@ -19547,7 +19547,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-33814"
           ],
           "PublishedDate": "2026-05-07T20:16:42.88Z",
-          "LastModifiedDate": "2026-09-15T12:17:26.72Z"
+          "LastModifiedDate": "2026-09-16T13:17:43.937Z"
         },
         {
           "VulnerabilityID": "CVE-2026-33818",
